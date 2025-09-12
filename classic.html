@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Snake</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background-color: #1a1a1a;
+    }
+
+    canvas {
+      border: 2px solid #fff;
+      background-color: #000;
+      display: block;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- the canvas -->
+  <canvas id="gameCanvas" width="800" height="600"></canvas>
+
+  <script>
+
+    // ===============
+    // setup variables
+    // ===============
+
+
+    // canvas
+    const canvas = document.getElementById('gameCanvas')
+    const ctx = canvas.getContext('2d')
+
+    // world
+    const WORLD = []
+    const WORLD_PX_SIZE = 100
+    const WORLD_WIDTH = 800 / WORLD_PX_SIZE
+    const WORLD_HEIGHT = 600 / WORLD_PX_SIZE
+    const MAX_SNAKE_LENGTH = WORLD_WIDTH * WORLD_HEIGHT
+    const SNAKE = { x: -1, y: 0, length: 1, state: 'alive' }
+
+    // controlls
+    let lastKeyPressed = 'ArrowRight'
+
+    // game loop (in milliseconds)
+    let updateInterval = 500
+    let lastUpdate = 0
+
+
+    // =========
+    // functions
+    // =========
+
+
+    function update() {
+      requestAnimationFrame((currentTime) => {
+        const delta = currentTime - lastUpdate
+
+        if (delta >= updateInterval) {
+          updateSnake()
+          lastUpdate = currentTime
+        }
+
+        draw()
+
+        // loop while alive
+        if (SNAKE.state === 'alive') {
+          update()
+        }
+      })
+    }
+
+    function updateSnake() {
+      // move based on controlls
+      switch (lastKeyPressed) {
+        case 'ArrowRight':
+          SNAKE.x += 1
+          break
+        case 'ArrowLeft':
+          SNAKE.x -= 1
+          break
+        case 'ArrowDown':
+          SNAKE.y += 1
+          break
+        case 'ArrowUp':
+          SNAKE.y -= 1
+          break
+      }
+
+      // snake hit wall
+      if (SNAKE.x < 0 || SNAKE.x > WORLD_WIDTH - 1 || SNAKE.y < 0 || SNAKE.y > WORLD_HEIGHT - 1) {
+        SNAKE.state = 'dead'
+        return
+      }
+
+      // ate itself
+      else if (WORLD[SNAKE.y][SNAKE.x] > 0) {
+        SNAKE.state = 'dead'
+        return
+      }
+
+      // ate food
+      else if (WORLD[SNAKE.y][SNAKE.x] === -1) {
+        SNAKE.length += 1
+        updateInterval -= 2
+        addFood()
+      }
+
+      // win if snake fills up world
+      else if (SNAKE.length >= MAX_SNAKE_LENGTH) {
+        SNAKE.state = 'win'
+        return
+      }
+
+      // move snake
+      else {
+
+        // decay snake
+        for (let y = 0; y < WORLD.length; y++) {
+          for (let x = 0; x < WORLD[y].length; x++) {
+            if (WORLD[y][x] > 0) {
+              WORLD[y][x]--
+            }
+          }
+        }
+      }
+
+      // update snake head position
+      WORLD[SNAKE.y][SNAKE.x] = SNAKE.length
+    }
+
+    function addFood() {
+      // -1 for food
+      const numEmptySpaces = MAX_SNAKE_LENGTH - SNAKE.length - 1
+      const randNum = Math.floor(Math.random() * numEmptySpaces)
+
+      let count = 0
+      for (let y = 0; y < WORLD.length; y++) {
+        for (let x = 0; x < WORLD[y].length; x++) {
+          if (WORLD[y][x] === 0) {
+            if (count === randNum) {
+              WORLD[y][x] = -1
+              return
+            }
+            count += 1
+          }
+        }
+      }
+    }
+
+    function draw() {
+      // clear everything
+      ctx.clearRect(0, 0, canvas.width, canvas.height)
+
+      // render world
+      for (let y = 0; y < WORLD.length; y++) {
+        for (let x = 0; x < WORLD[y].length; x++) {
+          const cell = WORLD[y][x]
+
+          if (cell > 0) {
+            ctx.fillStyle = SNAKE.state === 'alive' ? 'green' : 'red'
+            ctx.fillRect(x * WORLD_PX_SIZE, y * WORLD_PX_SIZE, WORLD_PX_SIZE, WORLD_PX_SIZE)
+          }
+
+          else if (cell === -1) {
+            ctx.fillStyle = 'yellow'
+            ctx.fillRect(x * WORLD_PX_SIZE, y * WORLD_PX_SIZE, WORLD_PX_SIZE, WORLD_PX_SIZE)
+          }
+        }
+      }
+    }
+
+    function setupWorld() {
+      for (let y = 0; y < WORLD_HEIGHT; y++) {
+        WORLD.push(new Array(WORLD_WIDTH).fill(0))
+      }
+    }
+
+    function setupControlls() {
+      document.addEventListener('keydown', (e) => {
+        lastKeyPressed = e.key
+      })
+    }
+
+
+    // ============
+    // startup game
+    // ============
+
+
+    setupWorld()
+    setupControlls()
+    addFood()
+    update()
+
+  </script>
+</body>
+
+</html>

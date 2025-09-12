@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Snake</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background-color: #1a1a1a;
+    }
+
+    canvas {
+      border: 2px solid #fff;
+      background-color: #000;
+      display: block;
+    }
+
+    #game-container {
+      position: relative;
+    }
+    #effects {
+      position: absolute;
+      top: -35px;
+      display: flex;
+      gap: 5px;
+    }
+    .effect {
+      width: 30px;
+      height: 30px;
+      text-align: center;
+      line-height: 30px;
+      color: white;
+    }
+    .effect.GrowthEffect {
+      background-color: rgb(0, 107, 0);
+    }
+    .effect.SpeedBoostEffect {
+      background-color: rgb(145, 0, 0);
+    }
+    .effect.WrapEffect {
+      background-color: rgb(0, 0, 199);
+    }
+
+    #stats {
+      position: fixed;
+      top: 100px;
+      right: 100px;
+      color: white;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- the canvas -->
+  <div id="game-container">
+    <div id="effects"></div>
+    <canvas id="game-canvas" width="800" height="600"></canvas>
+  </div>
+
+  <!-- temp i think -->
+  <div id="stats">
+    <div>
+      Moves <span id="moves-stat"></span>
+    </div>
+    <div>
+      State <span id="state"></span>
+    </div>
+  </div>
+
+  <script src="./dist/main.js" type="module"></script>
+
+</body>
+
+</html>
