@@ -1,10 +1,10 @@
 import { type Effect, GrowthEffect, SpeedBoostEffect, WrapEffect } from '../effects/index.js'
-import { Item } from './Item.js'
+import { Consumable } from './Consumable.js'
 
 
-export class Food extends Item {
+export class Food extends Consumable {
 
-  public effects(): ReadonlyArray<Effect> {
+  protected effects(): ReadonlyArray<Effect> {
     return [
       new GrowthEffect({ duration: 1 }),
       new SpeedBoostEffect({ duration: 5, boostAmount: 25 }),

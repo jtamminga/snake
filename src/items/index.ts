@@ -1,3 +1,5 @@
+export * from './Consumable.js'
 export * from './Food.js'
 export * from './Item.js'
 export * from './Items.js'
+export * from './Stone.js'

@@ -1,4 +1,4 @@
-import { type Item, Items } from './items/index.js'
+import { Consumable, type Item, Items, Stone } from './items/index.js'
 import type { Snake } from './Snake.ts'
 import { type Direction, Bounds } from './utils/index.js'
 
@@ -14,6 +14,7 @@ export class World {
     this._bounds = new Bounds(args)
     this._items = new Items({ world: this })
     this._items.spawnFood()
+    this._items.spawnStone()
   }
 
   public get width(): number {
@@ -43,15 +44,23 @@ export class World {
       if (snake.effects.wrap) {
         snake.teleport(this._bounds.wrap(snake.head))
       } else {
-        snake.died()
+        snake.die()
       }
     }
 
     // handle items
     const item = this._items.at(snake.head)
     if (item) {
-      snake.eat(item)
-      this._items.spawnFood()
+
+      // snake hits a stone, it dies
+      if (item instanceof Stone) {
+        snake.die()
+      }
+      // otherwise eat item
+      else if (item instanceof Consumable) {
+        snake.eat(item)
+        this._items.spawnFood()
+      }
     }
 
     // update items

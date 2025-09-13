@@ -1,5 +1,5 @@
 import { Effects } from './effects/Effects.js'
-import type { Item } from './items/index.js'
+import type { Consumable } from './items/Consumable.js'
 import type { Direction } from './utils/index.js'
 import { Position } from './utils/Position.js'
 
@@ -33,8 +33,7 @@ export class Snake {
   }
 
   public get speed(): number {
-    const boost = this._effects.speedBoosts
-      .reduce((total, boost) => total + boost.amount, 0)
+    const boost = this._effects.speedBoost?.amount ?? 0
     return this._speed + boost
   }
 
@@ -54,7 +53,7 @@ export class Snake {
 
     // make sure we didn't eat ourselves
     if (this._segments.some(seg => seg.equals(updatedHead))) {
-      this._alive = false
+      this.die()
       return
     }
 
@@ -76,16 +75,15 @@ export class Snake {
     this._segments = [position, ...tail]
   }
 
-  public eat(item: Item): void {
-    this._effects.add(item.effects())
-    item.consume()
+  public eat(item: Consumable): void {
+    this._effects.add(item.consume())
   }
 
   public occupies(position: Position): boolean {
     return this._segments.some(seg => seg.equals(position))
   }
 
-  public died(): void {
+  public die(): void {
     this._alive = false
   }
 

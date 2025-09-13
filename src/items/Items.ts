@@ -2,6 +2,7 @@ import { Position } from '../utils/index.js'
 import type { World } from '../World.js'
 import { Food } from './Food.js'
 import type { Item } from './Item.js'
+import { Stone } from './Stone.js'
 
 
 export class Items {
@@ -9,9 +10,14 @@ export class Items {
   private _world: World
   private _items: Item[]
 
+  // need a better way to manage spawning of items
+  private _updatesSinceStoneSpawn: number
+
   public constructor(args: ItemsArgs) {
     this._world = args.world
     this._items = []
+
+    this._updatesSinceStoneSpawn = 0
   }
 
   public get all(): ReadonlyArray<Item> {
@@ -19,13 +25,13 @@ export class Items {
   }
 
   public at(position: Position): Item | undefined {
-    return this._items.find(item => item.occupies(position))
+    return this._items.find(item => item.occupies(position) && item.spawned)
   }
 
   public consumeAt(position: Position): Item | undefined {
     // try to find item at position
     const itemIndex = this._items.findIndex(item =>
-      item.occupies(position))
+      item.occupies(position) && item.spawned)
 
     if (itemIndex !== -1) {
       // remove consumed item
@@ -41,9 +47,20 @@ export class Items {
     this._items.push(new Food({ position }))
   }
 
+  public spawnStone(): void {
+    this._updatesSinceStoneSpawn = 0
+    const position = this.randomPosition()
+    this._items.push(new Stone({ spawningDuration: 5, duration: 10, position }))
+  }
+
   public update(): void {
     this._items.forEach(item => item.update())
-    this._items = this._items.filter(item => !item.expired && !item.consumed)
+    this._items = this._items.filter(item => item.exists)
+
+    this._updatesSinceStoneSpawn += 1
+    if (this._updatesSinceStoneSpawn > 20) {
+      this.spawnStone()
+    }
   }
 
   private randomPosition(): Position {
@@ -67,8 +84,6 @@ export class Items {
 
     throw new Error('problem generating random position')
   }
-
-
 }
 
 
