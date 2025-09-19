@@ -3,12 +3,14 @@ import type { Position } from '../utils/index.js'
 
 export abstract class Item {
 
+  protected _destroyed: boolean
   protected _position: Position
   protected _updates: number
   protected _spawningDuration: number
   protected _duration: number | undefined
 
   public constructor(args: ItemArgs) {
+    this._destroyed = false
     this._updates = 0
     this._position = args.position
     this._spawningDuration = args.spawningDuration ?? 0
@@ -30,7 +32,7 @@ export abstract class Item {
   }
 
   public get exists(): boolean {
-    return !this.expired
+    return !this.expired && !this._destroyed
   }
 
   public get expired(): boolean {
@@ -39,11 +41,15 @@ export abstract class Item {
       : this._updates >= this._duration
   }
 
+  public destroy(): void {
+    this._destroyed = true
+  }
+
   public occupies(position: Position): boolean {
     return this._position.equals(position)
   }
 
-  public update() {
+  public update(): void {
     this._updates += 1
   }
 

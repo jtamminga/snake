@@ -54,9 +54,13 @@ export class World {
     const item = this._items.at(snake.head)
     if (item) {
 
-      // snake hits a stone, it dies
+      // snake hits a stone, it dies, unless invincible
       if (item instanceof Stone) {
-        snake.die()
+        if (snake.effects.invincible) {
+          item.destroy()
+        } else {
+          snake.die()
+        }
       }
       // otherwise eat item
       else if (item instanceof Consumable) {

@@ -40,7 +40,7 @@ export class Spawner {
 
     // coins
     const coins = items.filter(item => item instanceof Coin)
-    if (this._updatesSinceCoin >= 5 && coins.length < 6) {
+    if (this._updatesSinceCoin >= 5 && coins.length < 2) {
       this._spawningItems.push(this.createCoin())
       this._updatesSinceCoin = 0
     } else {
@@ -66,7 +66,7 @@ export class Spawner {
 
   private createStone(): Stone {
     const position = this.randomPosition()
-    return new Stone({ spawningDuration: 5, duration: 10, position })
+    return new Stone({ spawningDuration: 5, duration: 18, position })
   }
 
   private createCoin(): Coin {

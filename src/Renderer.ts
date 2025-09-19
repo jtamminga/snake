@@ -68,7 +68,9 @@ export class Renderer {
     // render snake
     for (const seg of snake.segments) {
       canvas.beginPath()
-      canvas.fillStyle = snake.alive ? 'green' : 'red'
+      canvas.fillStyle = snake.alive
+        ? snake.effects.invincible ? 'rgba(255, 217, 0, 1)' : 'green'
+        : 'red'
       canvas.roundRect(
         seg.x * pxSize + pxPadding,
         seg.y * pxSize + pxPadding,

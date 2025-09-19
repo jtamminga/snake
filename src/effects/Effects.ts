@@ -2,6 +2,7 @@ import type { Effect } from './Effect.js'
 import { GrowthEffect } from './GrowthEffect.js'
 import { WrapEffect } from './WrapEffect.js'
 import { SpeedBoostEffect } from './SpeedBoostEffect.js'
+import { InvincibleEffect } from './InvincibleEffect.js'
 
 
 export class Effects {
@@ -14,12 +15,13 @@ export class Effects {
   private _wrap: WrapEffect | undefined
   private _growth: GrowthEffect | undefined
   private _speedBoost: SpeedBoostEffect | undefined
+  private _invincible: InvincibleEffect | undefined
 
   public constructor() {
   }
 
   public get all(): ReadonlyArray<Effect> {
-    return [this._wrap, this._speedBoost, this._growth]
+    return [this._wrap, this._speedBoost, this._growth, this._invincible]
       .filter(effect => effect !== undefined)
   }
 
@@ -33,6 +35,10 @@ export class Effects {
 
   public get speedBoost(): SpeedBoostEffect | undefined {
     return this._speedBoost
+  }
+
+  public get invincible(): InvincibleEffect | undefined {
+    return this._invincible
   }
 
   public add(effects: ReadonlyArray<Effect>): void {
@@ -58,12 +64,25 @@ export class Effects {
       this._speedBoost.update()
       if (this._speedBoost.expired) this._speedBoost = undefined
     }
+
+    // update invincible
+    if (this._invincible) {
+      this._invincible.update()
+      if (this._invincible.expired) this._invincible = undefined
+    }
   }
 
   private addEffect(effect: Effect): void {
 
     // single instance (increases duration of active)
     if (effect instanceof GrowthEffect) {
+
+      // eating food while invincible doubles growth effect
+      if (this._invincible) {
+        effect.addDuration(1)
+      }
+
+      // add to current growth effect if there is one
       if (this._growth) {
         this._growth.addDuration(effect.duration)
       } else {
@@ -79,6 +98,11 @@ export class Effects {
     // replaces active
     else if (effect instanceof SpeedBoostEffect) {
       this._speedBoost = effect
+    }
+
+    // replaces active
+    else if (effect instanceof InvincibleEffect) {
+      this._invincible = effect
     }
   }
 
