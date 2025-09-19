@@ -1,4 +1,4 @@
-import { Item, Stone } from "./items/index.js"
+import { Coin, Item, Stone } from "./items/index.js"
 import type { World } from "./World.js"
 
 
@@ -31,6 +31,40 @@ export class Renderer {
     // clear canvas
     canvas.clearRect(0, 0, this._worldRenderedWidth, this._worldRenderedHeight)
 
+    // render items
+    for (const item of world.items) {
+
+      // coin
+      if (item instanceof Coin) {
+        const radius = pxSize / 4
+        const offset = (pxSize - (radius*2)) / 2 // for centering
+        canvas.beginPath()
+        canvas.ellipse(
+          (item.position.x * pxSize) + radius + offset,
+          (item.position.y * pxSize) + radius + offset,
+          radius,
+          radius,
+          0, 0, 2 * Math.PI
+        )
+        canvas.fillStyle = 'rgba(255, 217, 0, 1)'
+        canvas.fill()
+      }
+
+      // any other item
+      else {
+        canvas.beginPath()
+        canvas.fillStyle = this.itemColor(item)
+        canvas.roundRect(
+          item.position.x * pxSize + pxPadding,
+          item.position.y * pxSize + pxPadding,
+          pxSize - (pxPadding * 2),
+          pxSize - (pxPadding * 2),
+          pxSize / 10
+        )
+        canvas.fill()
+      }
+    }
+
     // render snake
     for (const seg of snake.segments) {
       canvas.beginPath()
@@ -44,24 +78,10 @@ export class Renderer {
       )
       canvas.fill()
     }
-
-    // render items
-    for (const item of world.items) {
-      canvas.beginPath()
-      canvas.fillStyle = this.itemColor(item)
-      canvas.roundRect(
-        item.position.x * pxSize + pxPadding,
-        item.position.y * pxSize + pxPadding,
-        pxSize - (pxPadding * 2),
-        pxSize - (pxPadding * 2),
-        pxSize / 10
-      )
-      canvas.fill()
-    }
   }
 
   private itemColor(item: Item): string  {
-    const opacity = item.spawning ? '0.2' : '1'
+    const opacity = item.spawning ? '0.3' : '1'
 
     if (item instanceof Stone) {
       return `rgba(70, 70, 70, ${opacity})`

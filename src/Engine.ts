@@ -61,6 +61,14 @@ export class Engine {
       // update if delta is larger than update interval
       if (delta >= updateInterval) {
         world.update(this._input.direction)
+
+        if (!snake.alive) {
+          this._state = 'gameOver'
+        }
+        else if (snake.length === world.area) {
+          this._state = 'gameWon'
+        }
+
         this._lastUpdate = currentTime
       }
 
@@ -70,8 +78,8 @@ export class Engine {
       // post update
       this._afterUpdate?.()
 
-      // loop while alive
-      if (snake.alive) {
+      // loop
+      if (this._state === 'playing') {
         this.update()
       }
     })
@@ -113,3 +121,4 @@ type EngineState =
   | 'playing'
   | 'paused'
   | 'gameOver'
+  | 'gameWon'

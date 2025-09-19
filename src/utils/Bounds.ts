@@ -19,6 +19,10 @@ export class Bounds {
     return this._height
   }
 
+  public get area(): number {
+    return this._width * this._height
+  }
+
   public contains(position: Position): boolean {
     return position.x >= 0 && position.x < this._width
       && position.y >= 0 && position.y < this._height

@@ -1,3 +1,4 @@
+export * from './Coin.js'
 export * from './Consumable.js'
 export * from './Food.js'
 export * from './Item.js'

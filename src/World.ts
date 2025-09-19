@@ -13,8 +13,6 @@ export class World {
     this._snake = args.snake
     this._bounds = new Bounds(args)
     this._items = new Items({ world: this })
-    this._items.spawnFood()
-    this._items.spawnStone()
   }
 
   public get width(): number {
@@ -23,6 +21,10 @@ export class World {
 
   public get height(): number {
     return this._bounds.height
+  }
+
+  public get area(): number {
+    return this._bounds.area
   }
 
   public get snake(): Snake {
@@ -59,7 +61,6 @@ export class World {
       // otherwise eat item
       else if (item instanceof Consumable) {
         snake.eat(item)
-        this._items.spawnFood()
       }
     }
 
