@@ -1,9 +1,13 @@
+import type { Notifier } from './Notifier.js'
 import { Renderer, type RendererArgs } from './Renderer.js'
 import { Input } from './utils/index.js'
 import type { World } from './World.js'
 
 
 export class Engine {
+
+  // notifications
+  private _notifier: Notifier
 
   // rendering
   private _renderer: Renderer
@@ -20,6 +24,7 @@ export class Engine {
   private _snakeSpeedMult: number
 
   public constructor(args: EngineArgs) {
+    this._notifier = args.notifier
     this._renderer = new Renderer(args)
 
     this._state = 'paused'
@@ -51,6 +56,7 @@ export class Engine {
 
   private update() {
     requestAnimationFrame((currentTime) => {
+      const notifier = this._notifier
       const world = this._world
       const snake = world.snake
 
@@ -60,6 +66,7 @@ export class Engine {
 
       // update if delta is larger than update interval
       if (delta >= updateInterval) {
+        notifier.update()
         world.update(this._input.direction)
 
         if (!snake.alive) {

@@ -1,8 +1,8 @@
+import type { Notifier } from '../Notifier.js'
 import { Position } from '../utils/index.js'
 import type { World } from '../World.js'
 import type { Item } from './Item.js'
 import { Spawner } from './Spawner.js'
-import { Stone } from './Stone.js'
 
 
 /**
@@ -11,11 +11,13 @@ import { Stone } from './Stone.js'
 export class Items {
 
   private readonly _spawner: Spawner
+  private readonly _notifier: Notifier
   private _world: World
   private _items: Item[]
 
   public constructor(args: ItemsArgs) {
     this._spawner = new Spawner(args)
+    this._notifier = args.notifier
     this._world = args.world
     this._items = []
   }
@@ -65,7 +67,7 @@ export class Items {
 
         // blocked
         if (blocked) {
-          console.debug('item blocked!')
+          this._notifier.add({ message: 'stone blocked', position: item.position })
           return false
         }
       }
@@ -81,5 +83,6 @@ export class Items {
 
 
 type ItemsArgs = {
+  notifier: Notifier
   world: World
 }

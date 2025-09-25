@@ -1,4 +1,5 @@
 import { Coin, Food, Item, Stone } from "./items/index.js"
+import type { Notifier } from './Notifier.js'
 import type { World } from "./World.js"
 
 
@@ -6,6 +7,7 @@ export class Renderer {
 
   private _world: World
 
+  private _notifier: Notifier
   private _canvas: CanvasRenderingContext2D
   private _pxSize: number
   private _pxPadding: number
@@ -14,17 +16,18 @@ export class Renderer {
 
   public constructor(args: RendererArgs) {
     this._world = args.world
+    this._notifier = args.notifier
     this._canvas = args.canvas
     this._pxSize = args.pxSize
     this._pxPadding = args.pxPadding
     this._worldRenderedWidth = this._world.width * this._pxSize
     this._worldRenderedHeight = this._world.height * this._pxSize
 
-    this._canvas.font = '50px sans-serif'
     this._canvas.textBaseline = 'hanging'
   }
 
   public draw() {
+    const notifer = this._notifier
     const pxSize = this._pxSize
     const canvas = this._canvas
     const world = this._world
@@ -83,12 +86,12 @@ export class Renderer {
         canvas.fill()
 
         if (item.spawning) {
-          const offset = 35
+          canvas.font = '50px Tiny5'
           canvas.fillStyle = `rgba(255, 255, 255, 0.1)`
           canvas.fillText(
             item.updatesTillSpawn.toString(),
-            item.position.x * pxSize + offset,
-            item.position.y * pxSize + offset
+            item.position.x * pxSize + 40,
+            item.position.y * pxSize + 30
           )
         }
       }
@@ -110,16 +113,43 @@ export class Renderer {
       canvas.fill()
     }
 
+    // render snake effect timer
     if (snake.effects.rockEater) {
       const head = snake.head
-      const offset = 35
+      canvas.font = '50px Tiny5'
       canvas.fillStyle = `rgba(0, 0, 0, 0.1)`
       canvas.fillText(
         // made more sense when it shows updates left
         (snake.effects.rockEater.remaining - 1).toString(),
-        head.x * pxSize + offset,
-        head.y * pxSize + offset
+        head.x * pxSize + 40,
+        head.y * pxSize + 35
       )
+    }
+
+    // render notifications
+    for (const notif of notifer.notifications) {
+      const offset = 20
+      const yOffet = notif.updates * 10
+      canvas.font = '22px Tiny5'
+
+
+      canvas.shadowColor = 'black'
+      canvas.shadowBlur = 8
+      canvas.lineWidth = 1
+      canvas.strokeText(
+        notif.message,
+        notif.position.x * pxSize + offset,
+        notif.position.y * pxSize + offset + yOffet
+      )
+
+      canvas.fillStyle = `rgba(255, 255, 255, 1)`
+      canvas.fillText(
+        notif.message,
+        notif.position.x * pxSize + offset,
+        notif.position.y * pxSize + offset + yOffet
+      )
+
+      
     }
   }
 
@@ -151,4 +181,9 @@ export type RendererArgs = {
    * number of pixels padding a cell in the world
    */
   pxPadding: number
+
+  /**
+   * notifier instance
+   */
+  notifier: Notifier
 }

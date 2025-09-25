@@ -1,18 +1,25 @@
 import { Consumable, type Item, Items, Stone } from './items/index.js'
-import type { Snake } from './Snake.ts'
+import type { Notifier } from './Notifier.js'
+import { Snake } from './Snake.js'
 import { type Direction, Bounds } from './utils/index.js'
 
 
 export class World {
 
+  private _notifier: Notifier
   private _bounds: Bounds
   private _snake: Snake
   private _items: Items
 
   public constructor(args: WorldArgs) {
-    this._snake = args.snake
+    this._notifier = args.notifier
+    this._snake = new Snake({
+      startX: 0,
+      startY: 0,
+      baseSpeed: 1
+    })
     this._bounds = new Bounds(args)
-    this._items = new Items({ world: this })
+    this._items = new Items({ world: this, notifier: args.notifier })
   }
 
   public get bounds(): Bounds {
@@ -44,6 +51,7 @@ export class World {
   }
 
   public update(direction: Direction): void {
+    const notifier = this._notifier
     const snake = this._snake
 
     // update snake
@@ -65,6 +73,7 @@ export class World {
       if (item instanceof Stone) {
         if (snake.effects.rockEater) {
           snake.eat(item)
+          notifier.add({ message: 'destroyed', position: item.position })
         } else if (!this._items.at(item.position.apply(direction))) {
           item.push(direction)
         } else {
@@ -86,7 +95,7 @@ export class World {
 
 
 type WorldArgs = {
-  snake: Snake
   width: number
   height: number
+  notifier: Notifier
 }

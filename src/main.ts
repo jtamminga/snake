@@ -1,29 +1,25 @@
 import { World } from './World.js'
-import { Snake } from './Snake.js'
 import { Engine } from './Engine.js'
+import { Notifier } from './Notifier.js'
 
 
 // canvas
 const canvas = document.getElementById('game-canvas') as HTMLCanvasElement
 const canvasContext = canvas.getContext('2d')!
 
-
-// snake
-const snake = new Snake({
-  startX: 0,
-  startY: 0,
-  baseSpeed: 1
-})
+// notifier
+const notifier = new Notifier()
 
 // world
 const world = new World({
+  notifier,
   width: 8,
   height: 6,
-  snake
 })
 
 // engine
 const engine = new Engine({
+  notifier,
   canvas: canvasContext,
   pxSize: 100,
   pxPadding: 2,
