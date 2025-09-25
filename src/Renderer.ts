@@ -1,4 +1,4 @@
-import { Coin, Item, Stone } from "./items/index.js"
+import { Coin, Food, Item, Stone } from "./items/index.js"
 import type { World } from "./World.js"
 
 
@@ -19,6 +19,9 @@ export class Renderer {
     this._pxPadding = args.pxPadding
     this._worldRenderedWidth = this._world.width * this._pxSize
     this._worldRenderedHeight = this._world.height * this._pxSize
+
+    this._canvas.font = '50px sans-serif'
+    this._canvas.textBaseline = 'hanging'
   }
 
   public draw() {
@@ -50,10 +53,25 @@ export class Renderer {
         canvas.fill()
       }
 
-      // any other item
-      else {
+      // food
+      else if (item instanceof Food) {
+        const foodSize = pxSize / 2
+        const offset = (pxSize - foodSize) / 2
         canvas.beginPath()
-        canvas.fillStyle = this.itemColor(item)
+        canvas.roundRect(
+          item.position.x * pxSize + offset,
+          item.position.y * pxSize + offset,
+          foodSize,
+          foodSize,
+          pxSize / 10
+        )
+        canvas.fillStyle = `rgba(255, 153, 0, ${this.opacity(item)})`
+        canvas.fill()
+      }
+
+      // stone
+      else if (item instanceof Stone) {
+        canvas.beginPath()
         canvas.roundRect(
           item.position.x * pxSize + pxPadding,
           item.position.y * pxSize + pxPadding,
@@ -61,7 +79,18 @@ export class Renderer {
           pxSize - (pxPadding * 2),
           pxSize / 10
         )
+        canvas.fillStyle = `rgba(70, 70, 70, ${this.opacity(item)})`
         canvas.fill()
+
+        if (item.spawning) {
+          const offset = 35
+          canvas.fillStyle = `rgba(255, 255, 255, 0.1)`
+          canvas.fillText(
+            item.updatesTillSpawn.toString(),
+            item.position.x * pxSize + offset,
+            item.position.y * pxSize + offset
+          )
+        }
       }
     }
 
@@ -69,7 +98,7 @@ export class Renderer {
     for (const seg of snake.segments) {
       canvas.beginPath()
       canvas.fillStyle = snake.alive
-        ? snake.effects.invincible ? 'rgba(255, 217, 0, 1)' : 'green'
+        ? snake.effects.rockEater ? 'rgba(255, 217, 0, 1)' : 'green'
         : 'red'
       canvas.roundRect(
         seg.x * pxSize + pxPadding,
@@ -80,17 +109,22 @@ export class Renderer {
       )
       canvas.fill()
     }
+
+    if (snake.effects.rockEater) {
+      const head = snake.head
+      const offset = 35
+      canvas.fillStyle = `rgba(0, 0, 0, 0.1)`
+      canvas.fillText(
+        // made more sense when it shows updates left
+        (snake.effects.rockEater.remaining - 1).toString(),
+        head.x * pxSize + offset,
+        head.y * pxSize + offset
+      )
+    }
   }
 
-  private itemColor(item: Item): string  {
-    const opacity = item.spawning ? '0.3' : '1'
-
-    if (item instanceof Stone) {
-      return `rgba(70, 70, 70, ${opacity})`
-    }
-    else {
-      return `rgba(255, 153, 0, ${opacity})`
-    }
+  private opacity(item: Item): string  {
+    return item.spawning ? '0.3' : '1'
   }
 
 }

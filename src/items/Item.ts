@@ -23,10 +23,23 @@ export abstract class Item {
     return this._position
   }
 
+  /**
+   * This item is set to spawn in a set amount of time in the future
+   */
   public get spawning(): boolean {
     return this._updates < this._spawningDuration
   }
 
+  /**
+   * This item will spawn in the next update
+   */
+  public get justSpawned(): boolean {
+    return this._updates === this._spawningDuration
+  }
+
+  /**
+   * This item has spawned
+   */
   public get spawned(): boolean {
     return this._updates >= this._spawningDuration
   }
@@ -39,6 +52,10 @@ export abstract class Item {
     return this._duration === undefined
       ? false
       : this._updates >= this._duration
+  }
+
+  public get updatesTillSpawn(): number {
+    return this._spawningDuration - this._updates
   }
 
   public destroy(): void {

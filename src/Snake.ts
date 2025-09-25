@@ -52,7 +52,7 @@ export class Snake {
     const updatedHead = this.head.apply(direction)
 
     // make sure we didn't eat ourselves
-    if (this._segments.some(seg => seg.equals(updatedHead)) && !this._effects.invincible) {
+    if (this._segments.some(seg => seg.equals(updatedHead))) {
       this.die()
       return
     }

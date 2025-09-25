@@ -22,41 +22,12 @@
       display: block;
     }
 
-    #game-container {
-      position: relative;
-    }
-    #effects {
-      position: absolute;
-      top: -35px;
-      display: flex;
-      gap: 5px;
-    }
-    .effect {
-      width: 30px;
-      height: 30px;
-      text-align: center;
-      line-height: 30px;
-      color: white;
-    }
-    .effect.GrowthEffect {
-      background-color: rgb(0, 107, 0);
-    }
-    .effect.SpeedBoostEffect {
-      background-color: rgb(145, 0, 0);
-    }
-    .effect.WrapEffect {
-      background-color: rgb(0, 0, 199);
-    }
-    .effect.InvincibleEffect {
-      background-color: rgb(255, 217, 0);
-    }
-
-    #stats {
+    /* #stats {
       position: fixed;
       top: 100px;
       right: 100px;
       color: white;
-    }
+    } */
   </style>
 </head>
 
@@ -64,19 +35,18 @@
 
   <!-- the canvas -->
   <div id="game-container">
-    <div id="effects"></div>
     <canvas id="game-canvas" width="800" height="600"></canvas>
   </div>
 
   <!-- temp i think -->
-  <div id="stats">
+  <!-- <div id="stats">
     <div>
       Moves <span id="moves-stat"></span>
     </div>
     <div>
       State <span id="state"></span>
     </div>
-  </div>
+  </div> -->
 
   <script src="./dist/main.js" type="module"></script>
 

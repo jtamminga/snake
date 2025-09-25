@@ -15,6 +15,10 @@ export class World {
     this._items = new Items({ world: this })
   }
 
+  public get bounds(): Bounds {
+    return this._bounds
+  }
+
   public get width(): number {
     return this._bounds.width
   }
@@ -33,6 +37,10 @@ export class World {
 
   public get items(): ReadonlyArray<Item> {
     return this._items.all
+  }
+
+  public get everything() {
+    return [this._snake, ...this.items]
   }
 
   public update(direction: Direction): void {
@@ -54,14 +62,16 @@ export class World {
     const item = this._items.at(snake.head)
     if (item) {
 
-      // snake hits a stone, it dies, unless invincible
       if (item instanceof Stone) {
-        if (snake.effects.invincible) {
-          item.destroy()
+        if (snake.effects.rockEater) {
+          snake.eat(item)
+        } else if (!this._items.at(item.position.apply(direction))) {
+          item.push(direction)
         } else {
           snake.die()
         }
       }
+
       // otherwise eat item
       else if (item instanceof Consumable) {
         snake.eat(item)

@@ -2,7 +2,7 @@ import type { Effect } from './Effect.js'
 import { GrowthEffect } from './GrowthEffect.js'
 import { WrapEffect } from './WrapEffect.js'
 import { SpeedBoostEffect } from './SpeedBoostEffect.js'
-import { InvincibleEffect } from './InvincibleEffect.js'
+import { RockEaterEffect } from './RockEaterEffect.js'
 
 
 export class Effects {
@@ -15,13 +15,13 @@ export class Effects {
   private _wrap: WrapEffect | undefined
   private _growth: GrowthEffect | undefined
   private _speedBoost: SpeedBoostEffect | undefined
-  private _invincible: InvincibleEffect | undefined
+  private _rockEater: RockEaterEffect | undefined
 
   public constructor() {
   }
 
   public get all(): ReadonlyArray<Effect> {
-    return [this._wrap, this._speedBoost, this._growth, this._invincible]
+    return [this._wrap, this._speedBoost, this._growth, this._rockEater]
       .filter(effect => effect !== undefined)
   }
 
@@ -37,8 +37,8 @@ export class Effects {
     return this._speedBoost
   }
 
-  public get invincible(): InvincibleEffect | undefined {
-    return this._invincible
+  public get rockEater(): RockEaterEffect | undefined {
+    return this._rockEater
   }
 
   public add(effects: ReadonlyArray<Effect>): void {
@@ -66,9 +66,9 @@ export class Effects {
     }
 
     // update invincible
-    if (this._invincible) {
-      this._invincible.update()
-      if (this._invincible.expired) this._invincible = undefined
+    if (this._rockEater) {
+      this._rockEater.update()
+      if (this._rockEater.expired) this._rockEater = undefined
     }
   }
 
@@ -78,7 +78,7 @@ export class Effects {
     if (effect instanceof GrowthEffect) {
 
       // eating food while invincible doubles growth effect
-      if (this._invincible) {
+      if (this._rockEater) {
         effect.addDuration(1)
       }
 
@@ -101,8 +101,8 @@ export class Effects {
     }
 
     // replaces active
-    else if (effect instanceof InvincibleEffect) {
-      this._invincible = effect
+    else if (effect instanceof RockEaterEffect) {
+      this._rockEater = effect
     }
   }
 

@@ -13,13 +13,13 @@ export class Spawner {
 
   private readonly _world: World
   private _updatesSinceStone: number
-  private _updatesSinceCoin: number
+  private _updatesWithoutCoin: number
   private _spawningItems: Item[]
 
   public constructor(args: SpawnerArgs) {
     this._world = args.world
     this._updatesSinceStone = 0
-    this._updatesSinceCoin = 0
+    this._updatesWithoutCoin = 0
     this._spawningItems = []
   }
 
@@ -40,15 +40,17 @@ export class Spawner {
 
     // coins
     const coins = items.filter(item => item instanceof Coin)
-    if (this._updatesSinceCoin >= 5 && coins.length < 2) {
-      this._spawningItems.push(this.createCoin())
-      this._updatesSinceCoin = 0
+    if (coins.length === 0) {
+      if (this._updatesWithoutCoin >= 15) {
+        this._spawningItems.push(this.createCoin())
+      }
+      this._updatesWithoutCoin += 1
     } else {
-      this._updatesSinceCoin += 1
+      this._updatesWithoutCoin = 0
     }
 
     // stones
-    if (this._updatesSinceStone >= 15) {
+    if (this._updatesSinceStone >= 8) {
       this._spawningItems.push(this.createStone())
       this._updatesSinceStone = 0
     } else {
@@ -66,7 +68,7 @@ export class Spawner {
 
   private createStone(): Stone {
     const position = this.randomPosition()
-    return new Stone({ spawningDuration: 5, duration: 18, position })
+    return new Stone({ spawningDuration: 5, position })
   }
 
   private createCoin(): Coin {
@@ -76,10 +78,9 @@ export class Spawner {
 
   private randomPosition(): Position {
     const world = this._world
-    const items = world.items
 
-    const worldObjects = [world.snake, ...items, ...this._spawningItems]
-    const availableSpots = world.area - world.snake.length - items.length - this._spawningItems.length
+    const worldObjects = [...world.everything, ...this._spawningItems]
+    const availableSpots = world.area - world.snake.length - world.items.length - this._spawningItems.length
     const randNum = Math.floor(Math.random() * availableSpots)
 
     let count = 0
