@@ -7,6 +7,10 @@ import { Notifier } from './Notifier.js'
 const canvas = document.getElementById('game-canvas') as HTMLCanvasElement
 const canvasContext = canvas.getContext('2d')!
 
+// stats elements
+const lengthStatEl = document.getElementById('length-stat')!
+const movesStatEl = document.getElementById('moves-stat')!
+
 // notifier
 const notifier = new Notifier()
 
@@ -25,7 +29,11 @@ const engine = new Engine({
   pxPadding: 2,
   world,
   baseUpdateInterval: 500,
-  snakeSpeedMult: 10
+  snakeSpeedMult: 10,
+  afterUpdate: context => {
+    lengthStatEl.innerHTML = context.snakeLength.toString()
+    movesStatEl.innerHTML = context.moves.toString()
+  }
 })
 
 

@@ -25,34 +25,35 @@
       display: block;
     }
 
-    /* #stats {
-      position: fixed;
-      top: 100px;
-      right: 100px;
+    #stats {
+      font-family: 'Tiny5';
+      font-size: 24px;
       color: white;
-    } */
+      display: flex;
+      gap: 20px;
+      margin-bottom: 5px;
+      justify-self: end;
+    }
   </style>
 </head>
 
 <body>
 
-  <!-- the canvas -->
+  <!-- container -->
   <div id="game-container">
+
+    <!-- stats -->
+    <div id="stats">
+      <div>length <span id="length-stat">1</span></div>
+      <div>moves <span id="moves-stat">0</span></div>
+    </div>
+
+    <!-- canvas -->
     <canvas id="game-canvas" width="800" height="600"></canvas>
   </div>
 
-  <!-- temp i think -->
-  <!-- <div id="stats">
-    <div>
-      Moves <span id="moves-stat"></span>
-    </div>
-    <div>
-      State <span id="state"></span>
-    </div>
-  </div> -->
-
+  <!-- script -->
   <script src="./dist/main.js" type="module"></script>
 
 </body>
-
 </html>

@@ -13,10 +13,11 @@ export class Engine {
   private _renderer: Renderer
 
   // misc properties
+  private _numUpdates: number
   private _state: EngineState
   private _input: Input
   private _world: World
-  private _afterUpdate: (() => void) | undefined
+  private _afterUpdate: ((context: EngineContext) => void) | undefined
 
   // game loop timing
   private _lastUpdate: number
@@ -27,6 +28,7 @@ export class Engine {
     this._notifier = args.notifier
     this._renderer = new Renderer(args)
 
+    this._numUpdates = 0
     this._state = 'paused'
     this._input = new Input()
     this._world = args.world
@@ -66,9 +68,15 @@ export class Engine {
 
       // update if delta is larger than update interval
       if (delta >= updateInterval) {
+
+        // update
         notifier.update()
         world.update(this._input.direction)
 
+        // track updates
+        this._numUpdates += 1
+
+        // update engine state
         if (!snake.alive) {
           this._state = 'gameOver'
         }
@@ -76,6 +84,7 @@ export class Engine {
           this._state = 'gameWon'
         }
 
+        // time tracking
         this._lastUpdate = currentTime
       }
 
@@ -83,7 +92,10 @@ export class Engine {
       this._renderer.draw()
 
       // post update
-      this._afterUpdate?.()
+      this._afterUpdate?.({
+        moves: this._numUpdates,
+        snakeLength: snake.length
+      })
 
       // loop
       if (this._state === 'playing') {
@@ -121,7 +133,7 @@ type EngineArgs = RendererArgs & {
   /**
    * callback that gets triggered after each update
    */
-  afterUpdate?: () => void
+  afterUpdate?: (context: EngineContext) => void
 }
 
 type EngineState =
@@ -129,3 +141,7 @@ type EngineState =
   | 'paused'
   | 'gameOver'
   | 'gameWon'
+type EngineContext = {
+  moves: number
+  snakeLength: number
+}
