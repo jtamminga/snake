@@ -1,6 +1,4 @@
-import { World } from './World.js'
 import { Engine } from './Engine.js'
-import { Notifier } from './Notifier.js'
 
 
 // canvas
@@ -11,23 +9,13 @@ const canvasContext = canvas.getContext('2d')!
 const lengthStatEl = document.getElementById('length-stat')!
 const movesStatEl = document.getElementById('moves-stat')!
 
-// notifier
-const notifier = new Notifier()
-
-// world
-const world = new World({
-  notifier,
-  width: 8,
-  height: 6,
-})
-
 // engine
 const engine = new Engine({
-  notifier,
   canvas: canvasContext,
   pxSize: 100,
-  pxPadding: 2,
-  world,
+  pxPadding: 3,
+  worldWidth: 8,
+  worldHeight: 6,
   baseUpdateInterval: 500,
   snakeSpeedMult: 10,
   afterUpdate: context => {

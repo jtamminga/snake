@@ -1,44 +1,80 @@
-import type { Notifier } from './Notifier.js'
+import { GameOverMenu } from './GameOverMenu.js'
+import { Notifier } from './Notifier.js'
 import { Renderer, type RendererArgs } from './Renderer.js'
 import { Input } from './utils/index.js'
-import type { World } from './World.js'
+import { World } from './World.js'
 
 
 export class Engine {
 
-  // notifications
-  private _notifier: Notifier
-
-  // rendering
-  private _renderer: Renderer
-
-  // misc properties
-  private _numUpdates: number
-  private _state: EngineState
+  // main objects
   private _input: Input
   private _world: World
-  private _afterUpdate: ((context: EngineContext) => void) | undefined
+  private _renderer: Renderer
+  private _notifier: Notifier
+  private _gameOverMenu: GameOverMenu
+  private _canvas: CanvasRenderingContext2D
+
+  // helpers
+  private _worldRenderedWidth: number
+  private _worldRenderedHeight: number 
+
+  // state
+  private _state: EngineState
+  private _numUpdates: number
 
   // game loop timing
   private _lastUpdate: number
   private _baseUpdateInterval: number
   private _snakeSpeedMult: number
 
-  public constructor(args: EngineArgs) {
-    this._notifier = args.notifier
-    this._renderer = new Renderer(args)
+  // misc
+  private _afterUpdate: ((context: EngineContext) => void) | undefined
 
+
+  public constructor(args: EngineArgs) {
+
+    // state
     this._numUpdates = 0
     this._state = 'paused'
-    this._input = new Input()
-    this._world = args.world
-    this._afterUpdate = args.afterUpdate
 
+    this._worldRenderedWidth = args.worldWidth * args.pxSize
+    this._worldRenderedHeight = args.worldHeight * args.pxSize
+
+    // setup baseline canvas settings
+    this._canvas = args.canvas
+    this._canvas.textBaseline = 'middle'
+    this._canvas.textAlign = 'center'
+    this._canvas.shadowColor = 'black'
+
+    // game loop properties
     this._baseUpdateInterval = args.baseUpdateInterval
     this._snakeSpeedMult = args.snakeSpeedMult
     this._lastUpdate = 0
 
-    // controls
+    // initialize objects
+    this._input = new Input()
+    this._notifier = new Notifier()
+    this._world = new World({
+      width: args.worldWidth,
+      height: args.worldHeight,
+      notifier: this._notifier
+    })
+    this._renderer = new Renderer({
+      ...args,
+      world: this._world,
+      notifier: this._notifier
+    })
+    this._gameOverMenu = new GameOverMenu({
+      canvas: args.canvas,
+      width: this._worldRenderedWidth,
+      height: this._worldRenderedHeight
+    })
+    
+    // misc
+    this._afterUpdate = args.afterUpdate
+
+    // setup controls
     document.addEventListener('keydown', e => 
       this._input.keyDown(e.key)
     )
@@ -88,8 +124,12 @@ export class Engine {
         this._lastUpdate = currentTime
       }
 
-      // render world
+      // render
+      this._canvas.clearRect(0, 0, this._worldRenderedWidth, this._worldRenderedHeight)
       this._renderer.draw()
+      if (this._state === 'gameOver') {
+        this._gameOverMenu.render()
+      }
 
       // post update
       this._afterUpdate?.({
@@ -113,12 +153,17 @@ export class Engine {
 // =====
 
 
-type EngineArgs = RendererArgs & {
+type EngineArgs = Omit<RendererArgs, 'world' | 'notifier'> & {
 
   /**
-   * the world instance
+   * number of units wide the world is
    */
-  world: World
+  worldWidth: number
+
+  /**
+   * number of units high the world is
+   */
+  worldHeight: number
 
   /**
    * time in milliseconds each update takes

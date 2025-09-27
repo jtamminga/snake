@@ -6,13 +6,13 @@ import type { World } from "./World.js"
 export class Renderer {
 
   private _world: World
-
   private _notifier: Notifier
   private _canvas: CanvasRenderingContext2D
   private _pxSize: number
   private _pxPadding: number
-  private _worldRenderedWidth: number
-  private _worldRenderedHeight: number
+
+  // common sizes
+  private _halfPxSize: number
 
   public constructor(args: RendererArgs) {
     this._world = args.world
@@ -20,22 +20,19 @@ export class Renderer {
     this._canvas = args.canvas
     this._pxSize = args.pxSize
     this._pxPadding = args.pxPadding
-    this._worldRenderedWidth = this._world.width * this._pxSize
-    this._worldRenderedHeight = this._world.height * this._pxSize
 
-    this._canvas.textBaseline = 'hanging'
+    // common sizes
+    this._halfPxSize = args.pxSize / 2
   }
 
   public draw() {
     const notifer = this._notifier
     const pxSize = this._pxSize
+    const halfPxSize = this._halfPxSize
     const canvas = this._canvas
     const world = this._world
     const snake = world.snake
     const pxPadding = this._pxPadding
-
-    // clear canvas
-    canvas.clearRect(0, 0, this._worldRenderedWidth, this._worldRenderedHeight)
 
     // render items
     for (const item of world.items) {
@@ -54,65 +51,58 @@ export class Renderer {
         )
         canvas.fillStyle = 'rgba(255, 217, 0, 1)'
         canvas.fill()
+        canvas.closePath()
       }
 
       // food
       else if (item instanceof Food) {
-        const foodSize = pxSize / 2
+        const foodSize = halfPxSize
         const offset = (pxSize - foodSize) / 2
-        canvas.beginPath()
-        canvas.roundRect(
+        canvas.fillStyle = `rgba(255, 153, 0, 1)`
+        canvas.fillRect(
           item.position.x * pxSize + offset,
           item.position.y * pxSize + offset,
           foodSize,
-          foodSize,
-          pxSize / 10
+          foodSize
         )
-        canvas.fillStyle = `rgba(255, 153, 0, ${this.opacity(item)})`
-        canvas.fill()
       }
 
       // stone
       else if (item instanceof Stone) {
-        canvas.beginPath()
-        canvas.roundRect(
+        canvas.fillStyle = `rgba(70, 70, 70, ${this.opacity(item)})`
+        canvas.fillRect(
           item.position.x * pxSize + pxPadding,
           item.position.y * pxSize + pxPadding,
           pxSize - (pxPadding * 2),
           pxSize - (pxPadding * 2),
-          pxSize / 10
         )
-        canvas.fillStyle = `rgba(70, 70, 70, ${this.opacity(item)})`
-        canvas.fill()
 
         if (item.spawning) {
           canvas.font = '50px Tiny5'
           canvas.fillStyle = `rgba(255, 255, 255, 0.1)`
           canvas.fillText(
             item.updatesTillSpawn.toString(),
-            item.position.x * pxSize + 40,
-            item.position.y * pxSize + 30
+            item.position.x * pxSize + halfPxSize + 2,
+            item.position.y * pxSize + halfPxSize
           )
         }
       }
     }
 
-    // render snake
+    // snake
+    canvas.fillStyle = snake.alive
+      ? snake.effects.rockEater
+        ? 'rgba(255, 217, 0, 1)'
+        : 'green'
+      : 'red'
     for (const seg of snake.segments) {
-      canvas.beginPath()
-      canvas.fillStyle = snake.alive
-        ? snake.effects.rockEater ? 'rgba(255, 217, 0, 1)' : 'green'
-        : 'red'
-      canvas.roundRect(
+      canvas.fillRect(
         seg.x * pxSize + pxPadding,
         seg.y * pxSize + pxPadding,
         pxSize - (pxPadding * 2),
         pxSize - (pxPadding * 2),
-        pxSize / 10
       )
-      canvas.fill()
     }
-
     // render snake effect timer
     if (snake.effects.rockEater) {
       const head = snake.head
@@ -121,36 +111,33 @@ export class Renderer {
       canvas.fillText(
         // made more sense when it shows updates left
         (snake.effects.rockEater.remaining - 1).toString(),
-        head.x * pxSize + 40,
-        head.y * pxSize + 35
+        head.x * pxSize + halfPxSize + 2,
+        head.y * pxSize + halfPxSize
       )
     }
 
     // render notifications
+    canvas.font = '22px Tiny5'
+    canvas.shadowBlur = 8
+    canvas.lineWidth = 1
     for (const notif of notifer.notifications) {
-      const offset = 20
       const yOffet = notif.updates * 10
-      canvas.font = '22px Tiny5'
-
-
-      canvas.shadowColor = 'black'
-      canvas.shadowBlur = 8
-      canvas.lineWidth = 1
+      // black shadow
       canvas.strokeText(
         notif.message,
-        notif.position.x * pxSize + offset,
-        notif.position.y * pxSize + offset + yOffet
+        notif.position.x * pxSize + halfPxSize,
+        notif.position.y * pxSize + halfPxSize + yOffet
       )
-
+      // white text
       canvas.fillStyle = `rgba(255, 255, 255, 1)`
       canvas.fillText(
         notif.message,
-        notif.position.x * pxSize + offset,
-        notif.position.y * pxSize + offset + yOffet
+        notif.position.x * pxSize + halfPxSize,
+        notif.position.y * pxSize + halfPxSize + yOffet
       )
-
-      
     }
+    canvas.shadowBlur = 0
+    canvas.lineWidth = 0
   }
 
   private opacity(item: Item): string  {
