@@ -1,16 +1,18 @@
-export class GameOverMenu {
+import { Layer, type LayerArgs } from './Layer.js'
+import type { Input } from './utils/Input.js'
 
-  private _width: number
-  private _height: number
-  private _canvas: CanvasRenderingContext2D
+
+export class GameOverMenu extends Layer {
+
   private _middle: number
 
-
   public constructor(args: GameOverMenuArgs) {
-    this._width = args.width
-    this._height = args.height
-    this._canvas = args.canvas
+    super(args, false)
     this._middle = args.width / 2
+  }
+
+  public update(input: Input): number {
+    return 1000
   }
 
   public render(): void {
@@ -27,8 +29,4 @@ export class GameOverMenu {
 }
 
 
-type GameOverMenuArgs = {
-  width: number
-  height: number
-  canvas: CanvasRenderingContext2D
-}
+type GameOverMenuArgs = LayerArgs & {}

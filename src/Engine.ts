@@ -1,4 +1,7 @@
+import { Game } from './Game.js'
 import { GameOverMenu } from './GameOverMenu.js'
+import { LayerStack } from './LayerStack.js'
+import type { MainMenu } from './MainMenu.js'
 import { Notifier } from './Notifier.js'
 import { Renderer, type RendererArgs } from './Renderer.js'
 import { Input } from './utils/index.js'
@@ -9,11 +12,12 @@ export class Engine {
 
   // main objects
   private _input: Input
-  private _world: World
-  private _renderer: Renderer
-  private _notifier: Notifier
-  private _gameOverMenu: GameOverMenu
   private _canvas: CanvasRenderingContext2D
+
+  // private _menu: MainMenu
+  private _stack: LayerStack
+  private _game: Game
+  private _gameOverMenu: GameOverMenu
 
   // helpers
   private _worldRenderedWidth: number
@@ -21,10 +25,11 @@ export class Engine {
 
   // state
   private _state: EngineState
-  private _numUpdates: number
+  
 
   // game loop timing
   private _lastUpdate: number
+  private _updateInterval: number
   private _baseUpdateInterval: number
   private _snakeSpeedMult: number
 
@@ -35,7 +40,6 @@ export class Engine {
   public constructor(args: EngineArgs) {
 
     // state
-    this._numUpdates = 0
     this._state = 'paused'
 
     this._worldRenderedWidth = args.worldWidth * args.pxSize
@@ -51,20 +55,22 @@ export class Engine {
     this._baseUpdateInterval = args.baseUpdateInterval
     this._snakeSpeedMult = args.snakeSpeedMult
     this._lastUpdate = 0
+    this._updateInterval = 0
 
     // initialize objects
     this._input = new Input()
-    this._notifier = new Notifier()
-    this._world = new World({
-      width: args.worldWidth,
-      height: args.worldHeight,
-      notifier: this._notifier
+
+    this._stack = new LayerStack({
+      canvas: args.canvas,
+      width: this._worldRenderedWidth,
+      height: this._worldRenderedHeight
     })
-    this._renderer = new Renderer({
-      ...args,
-      world: this._world,
-      notifier: this._notifier
+    this._game = new Game({
+      canvas: args.canvas,
+      width: this._worldRenderedWidth,
+      height: this._worldRenderedHeight
     })
+    this._stack.add(this._game)
     this._gameOverMenu = new GameOverMenu({
       canvas: args.canvas,
       width: this._worldRenderedWidth,
@@ -94,30 +100,18 @@ export class Engine {
 
   private update() {
     requestAnimationFrame((currentTime) => {
-      const notifier = this._notifier
-      const world = this._world
-      const snake = world.snake
 
       // calculate time since last update
       const delta = currentTime - this._lastUpdate
-      const updateInterval = this._baseUpdateInterval - (snake.speed * this._snakeSpeedMult)
 
       // update if delta is larger than update interval
-      if (delta >= updateInterval) {
+      if (delta >= this._updateInterval) {
 
         // update
-        notifier.update()
-        world.update(this._input.direction)
+        this._updateInterval = this._stack.update(this._input)
 
-        // track updates
-        this._numUpdates += 1
-
-        // update engine state
-        if (!snake.alive) {
-          this._state = 'gameOver'
-        }
-        else if (snake.length === world.area) {
-          this._state = 'gameWon'
+        if (this._game.state.changedTo('over')) {
+          this._stack.add(this._gameOverMenu)
         }
 
         // time tracking
@@ -125,22 +119,16 @@ export class Engine {
       }
 
       // render
-      this._canvas.clearRect(0, 0, this._worldRenderedWidth, this._worldRenderedHeight)
-      this._renderer.draw()
-      if (this._state === 'gameOver') {
-        this._gameOverMenu.render()
-      }
+      this._stack.render()
 
       // post update
       this._afterUpdate?.({
-        moves: this._numUpdates,
-        snakeLength: snake.length
+        moves: 0,
+        snakeLength: 0
       })
 
       // loop
-      if (this._state === 'playing') {
-        this.update()
-      }
+      this.update()
     })
   }
 
