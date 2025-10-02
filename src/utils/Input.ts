@@ -1,28 +1,49 @@
+import { Event } from './Event.js'
+import { State } from './State.js'
+
+
 export class Input {
   
-  private _lastKeyPressed: Direction
+  private _lastKeyPressed: Event<Key>
+  private _lastDirectionKeyPressed: Direction
 
   public constructor() {
-    this._lastKeyPressed = 'right'
+    this._lastKeyPressed = new Event()
+    this._lastDirectionKeyPressed = 'right'
+  }
+
+  public get lastKey(): State<Key | undefined> {
+    return this._lastKeyPressed
   }
 
   public get direction(): Direction {
-    return this._lastKeyPressed
+    return this._lastDirectionKeyPressed
+  }
+
+  public reset(): void {
+    this._lastDirectionKeyPressed = 'right'
   }
 
   public keyDown(key: string) {
     switch (key) {
       case 'ArrowRight':
-        this._lastKeyPressed = 'right'
+        this._lastKeyPressed.update('right')
+        this._lastDirectionKeyPressed = 'right'
         break
       case 'ArrowLeft':
-        this._lastKeyPressed = 'left'
+        this._lastKeyPressed.update('left')
+        this._lastDirectionKeyPressed = 'left'
         break
       case 'ArrowUp':
-        this._lastKeyPressed = 'up'
+        this._lastKeyPressed.update('up')
+        this._lastDirectionKeyPressed = 'up'
         break
       case 'ArrowDown':
-        this._lastKeyPressed = 'down'
+        this._lastKeyPressed.update('down')
+        this._lastDirectionKeyPressed = 'down'
+        break
+      case 'Enter':
+        this._lastKeyPressed.update('enter')
         break
     }
   }
@@ -34,3 +55,4 @@ export type Direction =
   | 'down'
   | 'right'
   | 'left'
+export type Key = Direction | 'enter'

@@ -1,7 +1,7 @@
 export class State<T> {
 
-  private _preState: T
-  private _curState: T
+  protected _preState: T
+  protected _curState: T
 
   public constructor(initial: T) {
     this._preState = initial
@@ -14,6 +14,13 @@ export class State<T> {
 
   public get current(): T {
     return this._curState
+  }
+
+  public changed(callback: (value: T) => void): void {
+    if (this._preState !== this._curState) {
+      callback(this._curState)
+    }
+    this._preState = this._curState
   }
 
   public changedTo(state: T): boolean {

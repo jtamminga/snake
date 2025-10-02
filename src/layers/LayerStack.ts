@@ -1,5 +1,5 @@
 import { Layer, type LayerArgs } from './Layer.js'
-import type { Input } from './utils/index.js'
+import type { Input } from '../utils/index.js'
 
 
 export class LayerStack extends Layer {
@@ -29,6 +29,20 @@ export class LayerStack extends Layer {
 
   public update(input: Input): number {
     return this.top.update(input)
+  }
+
+  public cleanup(): void {
+    if (this.top.resolved) {
+      this._layers = this._layers.filter(layer => !layer.resolved)
+
+      this._lastIndex = this._layers.length - 1
+      for (let i = this._lastIndex; i >= 0; i--) {
+        if (this._layers[i]!.opaque) {
+          this._topOpaqueIndex = i
+          break
+        }
+      }
+    }
   }
 
   public render(): void {

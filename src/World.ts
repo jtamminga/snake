@@ -14,8 +14,8 @@ export class World {
   public constructor(args: WorldArgs) {
     this._notifier = args.notifier
     this._snake = new Snake({
-      startX: 0,
-      startY: 0,
+      startX: Math.floor(args.width / 2) - 1,
+      startY: Math.floor(args.height / 2) - 1,
       baseSpeed: 1
     })
     this._bounds = new Bounds(args)

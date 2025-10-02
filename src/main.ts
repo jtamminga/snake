@@ -23,7 +23,3 @@ const engine = new Engine({
     movesStatEl.innerHTML = context.moves.toString()
   }
 })
-
-
-
-engine.play()

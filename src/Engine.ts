@@ -1,11 +1,8 @@
 import { Game } from './Game.js'
 import { GameOverMenu } from './GameOverMenu.js'
-import { LayerStack } from './LayerStack.js'
-import type { MainMenu } from './MainMenu.js'
-import { Notifier } from './Notifier.js'
-import { Renderer, type RendererArgs } from './Renderer.js'
+import { LayerStack } from './layers/index.js'
+import { MainMenu } from './MainMenu.js'
 import { Input } from './utils/index.js'
-import { World } from './World.js'
 
 
 export class Engine {
@@ -16,22 +13,16 @@ export class Engine {
 
   // private _menu: MainMenu
   private _stack: LayerStack
-  private _game: Game
-  private _gameOverMenu: GameOverMenu
+  private _mainMenu: MainMenu
+  private _game?: Game
 
   // helpers
   private _worldRenderedWidth: number
-  private _worldRenderedHeight: number 
-
-  // state
-  private _state: EngineState
-  
+  private _worldRenderedHeight: number   
 
   // game loop timing
   private _lastUpdate: number
   private _updateInterval: number
-  private _baseUpdateInterval: number
-  private _snakeSpeedMult: number
 
   // misc
   private _afterUpdate: ((context: EngineContext) => void) | undefined
@@ -39,9 +30,7 @@ export class Engine {
 
   public constructor(args: EngineArgs) {
 
-    // state
-    this._state = 'paused'
-
+    // 
     this._worldRenderedWidth = args.worldWidth * args.pxSize
     this._worldRenderedHeight = args.worldHeight * args.pxSize
 
@@ -52,8 +41,6 @@ export class Engine {
     this._canvas.shadowColor = 'black'
 
     // game loop properties
-    this._baseUpdateInterval = args.baseUpdateInterval
-    this._snakeSpeedMult = args.snakeSpeedMult
     this._lastUpdate = 0
     this._updateInterval = 0
 
@@ -65,17 +52,12 @@ export class Engine {
       width: this._worldRenderedWidth,
       height: this._worldRenderedHeight
     })
-    this._game = new Game({
+    this._mainMenu = new MainMenu({
       canvas: args.canvas,
       width: this._worldRenderedWidth,
       height: this._worldRenderedHeight
     })
-    this._stack.add(this._game)
-    this._gameOverMenu = new GameOverMenu({
-      canvas: args.canvas,
-      width: this._worldRenderedWidth,
-      height: this._worldRenderedHeight
-    })
+    this._stack.add(this._mainMenu)
     
     // misc
     this._afterUpdate = args.afterUpdate
@@ -84,18 +66,9 @@ export class Engine {
     document.addEventListener('keydown', e => 
       this._input.keyDown(e.key)
     )
-  }
 
-  public play() {
-    this._state = 'playing'
+    // start the game loop
     this.update()
-  }
-
-  public pause() {
-    this._state = 'paused'
-  }
-
-  public restart() {
   }
 
   private update() {
@@ -107,16 +80,26 @@ export class Engine {
       // update if delta is larger than update interval
       if (delta >= this._updateInterval) {
 
+        // handle main menu selection
+        this._mainMenu.selection.changed(() => {
+          this._stack.add(this.createGame())
+          this._input.reset()
+        })
+
         // update
         this._updateInterval = this._stack.update(this._input)
 
-        if (this._game.state.changedTo('over')) {
-          this._stack.add(this._gameOverMenu)
+        // game over state
+        if (this._game?.state.changedTo('over')) {
+          this._stack.add(this.createGameOverMenu())
         }
 
         // time tracking
         this._lastUpdate = currentTime
       }
+
+      // cleanup stack
+      this._stack.cleanup()
 
       // render
       this._stack.render()
@@ -132,6 +115,23 @@ export class Engine {
     })
   }
 
+  private createGame(): Game {
+    this._game = new Game({
+      canvas: this._canvas,
+      width: this._worldRenderedWidth,
+      height: this._worldRenderedHeight
+    })
+    return this._game
+  }
+
+  private createGameOverMenu(): GameOverMenu {
+    return new GameOverMenu({
+      canvas: this._canvas,
+      width: this._worldRenderedWidth,
+      height: this._worldRenderedHeight
+    })
+  }
+
 
 }
 
@@ -141,7 +141,7 @@ export class Engine {
 // =====
 
 
-type EngineArgs = Omit<RendererArgs, 'world' | 'notifier'> & {
+type EngineArgs = {
 
   /**
    * number of units wide the world is
@@ -162,6 +162,21 @@ type EngineArgs = Omit<RendererArgs, 'world' | 'notifier'> & {
    * amount in milliseconds each snake speed takes off of update interval
    */
   snakeSpeedMult: number
+
+  /**
+   * the HTML canvas context
+   */
+  canvas: CanvasRenderingContext2D
+
+  /**
+   * how many pixels (width & height) a cell is when rendered
+   */
+  pxSize: number
+
+  /**
+   * number of pixels padding a cell in the world
+   */
+  pxPadding: number
 
   /**
    * callback that gets triggered after each update

@@ -1,5 +1,5 @@
 import { Coin, Food, Stone } from './items/index.js'
-import { Layer, type LayerArgs } from './Layer.js'
+import { Layer, type LayerArgs } from './layers/index.js'
 import { Notifier } from './Notifier.js'
 import type { Snake } from './Snake.js'
 import { State } from './utils/index.js'
@@ -45,9 +45,11 @@ export class Game extends Layer {
 
     if (!snake.alive) {
       this._state.update('over')
+      this.resolve()
     }
     else if (snake.length === this._world.area) {
       this._state.update('won')
+      this.resolve()
     }
 
     this._numUpdates += 1

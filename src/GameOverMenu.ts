@@ -1,4 +1,4 @@
-import { Layer, type LayerArgs } from './Layer.js'
+import { Layer, type LayerArgs } from './layers/index.js'
 import type { Input } from './utils/Input.js'
 
 
@@ -12,7 +12,11 @@ export class GameOverMenu extends Layer {
   }
 
   public update(input: Input): number {
-    return 1000
+    if (input.lastKey.changedTo('enter')) {
+      this.resolve()
+    }
+
+    return 1000 / 60
   }
 
   public render(): void {
