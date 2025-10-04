@@ -8,6 +8,7 @@ const canvasContext = canvas.getContext('2d')!
 // stats elements
 const lengthStatEl = document.getElementById('length-stat')!
 const movesStatEl = document.getElementById('moves-stat')!
+const goldStatEl = document.getElementById('gold-stat')!
 
 // engine
 const engine = new Engine({
@@ -21,5 +22,6 @@ const engine = new Engine({
   afterUpdate: context => {
     lengthStatEl.innerHTML = context.snakeLength.toString()
     movesStatEl.innerHTML = context.moves.toString()
+    goldStatEl.innerHTML = context.gold.toString()
   }
 })

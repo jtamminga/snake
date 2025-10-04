@@ -3,6 +3,7 @@ import { GrowthEffect } from './GrowthEffect.js'
 import { WrapEffect } from './WrapEffect.js'
 import { SpeedBoostEffect } from './SpeedBoostEffect.js'
 import { RockEaterEffect } from './RockEaterEffect.js'
+import { GoldEffect } from './GoldEffect.js'
 
 
 export class Effects {
@@ -12,6 +13,7 @@ export class Effects {
   // complicated effect stacking so I don't even need to hang on to multiple instance
   // of an effect "type"
 
+  private _gold: GoldEffect | undefined
   private _wrap: WrapEffect | undefined
   private _growth: GrowthEffect | undefined
   private _speedBoost: SpeedBoostEffect | undefined
@@ -23,6 +25,10 @@ export class Effects {
   public get all(): ReadonlyArray<Effect> {
     return [this._wrap, this._speedBoost, this._growth, this._rockEater]
       .filter(effect => effect !== undefined)
+  }
+
+  public get gold(): GoldEffect | undefined {
+    return this._gold
   }
 
   public get growth(): GrowthEffect | undefined {
@@ -46,6 +52,12 @@ export class Effects {
   }
 
   public update(): void {
+
+    // update growth
+    if (this._gold) {
+      this._gold.update()
+      if (this._gold.expired) this._gold = undefined
+    }
     
     // update growth
     if (this._growth) {
@@ -74,8 +86,13 @@ export class Effects {
 
   private addEffect(effect: Effect): void {
 
+    // single instance
+    if (effect instanceof GoldEffect) {
+      this._gold = effect
+    }
+
     // single instance (increases duration of active)
-    if (effect instanceof GrowthEffect) {
+    else if (effect instanceof GrowthEffect) {
 
       // eating food while invincible doubles growth effect
       if (this._rockEater) {

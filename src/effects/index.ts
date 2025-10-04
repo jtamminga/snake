@@ -1,5 +1,6 @@
 export * from './Effect.js'
 export * from './Effects.js'
+export * from './GoldEffect.js'
 export * from './GrowthEffect.js'
 export * from './RockEaterEffect.js'
 export * from './SpeedBoostEffect.js'

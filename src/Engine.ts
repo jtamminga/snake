@@ -1,7 +1,8 @@
-import { Game } from './Game.js'
+import { Game, type Stats } from './Game.js'
 import { GameOverMenu } from './GameOverMenu.js'
 import { LayerStack } from './layers/index.js'
 import { MainMenu } from './MainMenu.js'
+import { ShopMenu } from './ShopMenu.js'
 import { Input } from './utils/index.js'
 
 
@@ -105,9 +106,10 @@ export class Engine {
       this._stack.render()
 
       // post update
-      this._afterUpdate?.({
+      this._afterUpdate?.(this._game?.stats ?? {
         moves: 0,
-        snakeLength: 0
+        snakeLength: 0,
+        gold: 0
       })
 
       // loop
@@ -132,6 +134,18 @@ export class Engine {
     })
   }
 
+  private createShopMenu(): ShopMenu {
+    if (this._game === undefined) {
+      throw new Error('cannot create shop menu if there is no game')
+    }
+
+    return new ShopMenu({
+      canvas: this._canvas,
+      width: this._worldRenderedWidth,
+      height: this._worldRenderedHeight,
+      snake: this._game.world.snake
+    })
+  }
 
 }
 
@@ -189,7 +203,4 @@ type EngineState =
   | 'paused'
   | 'gameOver'
   | 'gameWon'
-type EngineContext = {
-  moves: number
-  snakeLength: number
-}
+type EngineContext = Stats & {}

@@ -1,7 +1,7 @@
 import { Consumable, type Item, Items, Stone } from './items/index.js'
 import type { Notifier } from './Notifier.js'
 import { Snake } from './Snake.js'
-import { type Direction, Bounds } from './utils/index.js'
+import { Bounds, type Direction } from './utils/index.js'
 
 
 export class World {

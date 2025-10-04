@@ -10,11 +10,13 @@ export class Snake {
   private _segments: Position[]
   private _effects: Effects
   private _speed: number
+  private _gold: number
 
   public constructor(args: SnakeArgs) {
     this._alive = true
     this._effects = new Effects()
     this._speed = args.baseSpeed
+    this._gold = 0
     this._segments = [
       new Position(args.startX, args.startY)
     ]
@@ -35,6 +37,10 @@ export class Snake {
   public get speed(): number {
     const boost = this._effects.speedBoost?.amount ?? 0
     return this._speed + boost
+  }
+
+  public get gold(): number {
+    return this._gold
   }
 
   public get segments(): ReadonlyArray<Position> {
@@ -71,12 +77,17 @@ export class Snake {
   }
 
   public teleport(position: Position): void {
-    const [head, ...tail] = this._segments
+    const [, ...tail] = this._segments
     this._segments = [position, ...tail]
   }
 
   public eat(item: Consumable): void {
     this._effects.add(item.consume())
+
+    // gained gold
+    if (this._effects.gold) {
+      this._gold += this._effects.gold.amount
+    }
   }
 
   public occupies(position: Position): boolean {

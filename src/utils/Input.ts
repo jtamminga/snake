@@ -45,6 +45,12 @@ export class Input {
       case 'Enter':
         this._lastKeyPressed.update('enter')
         break
+      case 'Escape':
+        this._lastKeyPressed.update('esc')
+        break
+      case 's':
+        this._lastKeyPressed.update('shop')
+        break
     }
   }
 }
@@ -55,4 +61,4 @@ export type Direction =
   | 'down'
   | 'right'
   | 'left'
-export type Key = Direction | 'enter'
+export type Key = Direction | 'enter' | 'esc' | 'shop'

@@ -37,6 +37,18 @@ export class Game extends Layer {
     return this._state
   }
 
+  public get world(): World {
+    return this._world
+  }
+
+  public get stats(): Stats {
+    return {
+      moves: this._numUpdates,
+      snakeLength: this._world.snake.length,
+      gold: this._world.snake.gold
+    }
+  }
+
   public update(input: Input): number {
     const {snake} = this._world
 
@@ -210,3 +222,8 @@ type GameState =
   | 'paused'
   | 'over'
   | 'won'
+export type Stats = {
+  moves: number
+  snakeLength: number
+  gold: number
+}
