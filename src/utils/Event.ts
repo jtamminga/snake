@@ -7,9 +7,15 @@ export class Event<T> extends State<T | undefined> {
     super(value)
   }
 
-  public flush(): void {
-    this._curState = undefined
-    this._preState = undefined
+  public consume(value: T): boolean {
+    const result = this.changedTo(value)
+
+    if (result) {
+      this._curState = undefined
+      this._preState = undefined
+    }
+
+    return result
   }
 
 }

@@ -10,7 +10,7 @@ export class ShopMenu extends Layer<boolean> {
   private _itemIndex: number
   
   public constructor(args: ShopMenuArgs) {
-    super(args)
+    super(args, false)
     this._middle = args.width / 2
     this._itemIndex = 0
     this._items = [
@@ -20,13 +20,13 @@ export class ShopMenu extends Layer<boolean> {
   }
 
   public update(input: Input): number {
-    if (input.lastKey.changedTo('up')) {
+    if (input.lastKey.consume('up')) {
       this._itemIndex -= 1
     }
-    else if (input.lastKey.changedTo('down')) {
+    else if (input.lastKey.consume('down')) {
       this._itemIndex += 1
     }
-    else if (input.lastKey.changedTo('esc')) {
+    else if (input.lastKey.consume('esc')) {
       this.resolve(true)
     }
 
@@ -37,7 +37,7 @@ export class ShopMenu extends Layer<boolean> {
   public render(): void {
     const canvas = this._canvas
 
-    canvas.fillStyle = 'rgba(255, 217, 0, 0.5)'
+    canvas.fillStyle = 'rgba(255, 217, 0, 0.7)'
     canvas.fillRect(0, 0, this._width, this._height)
 
     canvas.font = '100px Tiny5'

@@ -28,35 +28,31 @@ export class Input {
   public keyDown(key: string) {
     switch (key) {
       case 'ArrowRight':
-        this._rawLastKeyPressed = 'right'
+        this._lastKeyPressed.update('right')
         this._lastDirectionKeyPressed = 'right'
         break
       case 'ArrowLeft':
-        this._rawLastKeyPressed = 'left'
+        this._lastKeyPressed.update('left')
         this._lastDirectionKeyPressed = 'left'
         break
       case 'ArrowUp':
-        this._rawLastKeyPressed = 'up'
+        this._lastKeyPressed.update('up')
         this._lastDirectionKeyPressed = 'up'
         break
       case 'ArrowDown':
-        this._rawLastKeyPressed = 'down'
+        this._lastKeyPressed.update('down')
         this._lastDirectionKeyPressed = 'down'
         break
       case 'Enter':
-        this._rawLastKeyPressed = 'enter'
+        this._lastKeyPressed.update('enter')
         break
       case 'Escape':
-        this._rawLastKeyPressed = 'esc'
+        this._lastKeyPressed.update('esc')
         break
       case 's':
-        this._rawLastKeyPressed = 'shop'
+        this._lastKeyPressed.update('shop')
         break
     }
-  }
-
-  public update(): void {
-    this._lastKeyPressed.update(this._rawLastKeyPressed)
   }
 }
 

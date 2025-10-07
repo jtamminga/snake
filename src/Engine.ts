@@ -76,10 +76,8 @@ export class Engine {
       // update if delta is larger than update interval
       if (delta >= this._updateInterval) {
 
-        // update input first
-        this._input.update()
-
-        if (this._game && this._input.lastKey.changedTo('shop')) {
+        // open shop
+        if (this._game && this._input.lastKey.consume('shop')) {
           this._stack.add(this.createShopMenu())
         }
 

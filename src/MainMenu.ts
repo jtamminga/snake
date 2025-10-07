@@ -18,7 +18,7 @@ export class MainMenu extends Layer<boolean> {
   }
 
   public update(input: Input): number {
-    if (input.lastKey.changedTo('enter')) {
+    if (input.lastKey.consume('enter')) {
       this.resolve(true)
     }
 
