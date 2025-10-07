@@ -1,12 +1,13 @@
 import type { Input } from '../utils/index.js'
 
 
-export abstract class Layer {
+export abstract class Layer<TResolve = any> {
 
   protected _width: number
   protected _height: number
   protected _canvas: CanvasRenderingContext2D
-  protected _resolved: string | undefined
+  protected _resolved?: TResolve
+  private _resolvedCallback?: (value: TResolve) => void
 
   public constructor(args: LayerArgs, public readonly opaque = true) {
     this._width = args.width
@@ -18,14 +19,13 @@ export abstract class Layer {
     return this._resolved !== undefined
   }
 
-  protected resolve(): void {
-    this._resolved = 'resolved'
+  protected resolve(value: TResolve): void {
+    this._resolved = value
+    this._resolvedCallback?.(value)
   }
 
-  public whenResolved(callback: (value: any) => void): void {
-    if (this._resolved) {
-      callback(this._resolved)
-    }
+  public whenResolved(callback: (value: TResolve) => void): void {
+    this._resolvedCallback = callback
   }
 
   public abstract update(input: Input): number

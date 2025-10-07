@@ -3,7 +3,7 @@ import type { Snake } from './Snake.js'
 import { Input, Event } from './utils/index.js'
 
 
-export class ShopMenu extends Layer {
+export class ShopMenu extends Layer<boolean> {
 
   private _middle: number
   private _items: ShopItem[]
@@ -24,10 +24,10 @@ export class ShopMenu extends Layer {
       this._itemIndex -= 1
     }
     else if (input.lastKey.changedTo('down')) {
-      this._itemIndex -= this._itemIndex + 1
+      this._itemIndex += 1
     }
     else if (input.lastKey.changedTo('esc')) {
-      this.resolve()
+      this.resolve(true)
     }
 
     // 30 fps
@@ -43,6 +43,13 @@ export class ShopMenu extends Layer {
     canvas.font = '100px Tiny5'
     canvas.fillStyle = 'rgba(0, 0, 0, 1)'
     canvas.fillText('shop', this._middle, 100)
+
+    canvas.font = '50px Tiny5'
+    for (let i = 0; i < this._items.length; i++) {
+      const item = this._items[i]!
+      const isActive = this._itemIndex === i
+      canvas.fillText(isActive ? `> ${item.name} <` : item.name, this._middle, (i * 50) + 200)
+    }
   }
 
 }

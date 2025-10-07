@@ -2,7 +2,7 @@ import { Layer, type LayerArgs } from './layers/index.js'
 import type { Input } from './utils/Input.js'
 
 
-export class GameOverMenu extends Layer {
+export class GameOverMenu extends Layer<boolean> {
 
   private _middle: number
 
@@ -13,7 +13,7 @@ export class GameOverMenu extends Layer {
 
   public update(input: Input): number {
     if (input.lastKey.changedTo('enter')) {
-      this.resolve()
+      this.resolve(true)
     }
 
     return 1000 / 60

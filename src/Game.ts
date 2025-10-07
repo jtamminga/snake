@@ -7,7 +7,7 @@ import type { Input } from './utils/Input.js'
 import { World } from './World.js'
 
 
-export class Game extends Layer {
+export class Game extends Layer<GameOverReason> {
 
   private _state: State<GameState>
   private _numUpdates: number
@@ -57,11 +57,11 @@ export class Game extends Layer {
 
     if (!snake.alive) {
       this._state.update('over')
-      this.resolve()
+      this.resolve('lost')
     }
     else if (snake.length === this._world.area) {
       this._state.update('won')
-      this.resolve()
+      this.resolve('won')
     }
 
     this._numUpdates += 1
@@ -227,3 +227,4 @@ export type Stats = {
   snakeLength: number
   gold: number
 }
+type GameOverReason = 'won' | 'lost'

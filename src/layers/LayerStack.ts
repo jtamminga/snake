@@ -7,12 +7,14 @@ export class LayerStack extends Layer {
   private _layers: Layer[]
   private _lastIndex: number
   private _topOpaqueIndex: number
+  private _baseLayerFactory: () => Layer
 
-  public constructor(args: LayerArgs) {
+  public constructor(args: LayerStackArgs) {
     super(args)
-    this._layers = []
-    this._lastIndex = -1
-    this._topOpaqueIndex = -1
+    this._baseLayerFactory = args.baseLayerFactory
+    this._layers = [this._baseLayerFactory()]
+    this._lastIndex = 0
+    this._topOpaqueIndex = 0
   }
 
   private get top(): Layer {
@@ -28,7 +30,9 @@ export class LayerStack extends Layer {
   }
 
   public update(input: Input): number {
-    return this.top.update(input)
+    const result = this.top.update(input)
+    this.cleanup()
+    return result
   }
 
   public cleanup(): void {
@@ -42,6 +46,10 @@ export class LayerStack extends Layer {
           break
         }
       }
+
+      if (this._layers.length === 0) {
+        this.add(this._baseLayerFactory())
+      }
     }
   }
 
@@ -53,4 +61,9 @@ export class LayerStack extends Layer {
     }
   }
 
+}
+
+
+type LayerStackArgs = LayerArgs & {
+  baseLayerFactory: () => Layer
 }

@@ -2,7 +2,7 @@ import { Layer, type LayerArgs } from './layers/index.js'
 import { Input, Event } from './utils/index.js'
 
 
-export class MainMenu extends Layer {
+export class MainMenu extends Layer<boolean> {
 
   private _middle: number
   private _selection: Event<Selection>
@@ -19,11 +19,11 @@ export class MainMenu extends Layer {
 
   public update(input: Input): number {
     if (input.lastKey.changedTo('enter')) {
-      this._selection.update('play')
+      this.resolve(true)
     }
 
-    // no op
-    return 1000 / 60
+    // 30 fps
+    return 1000 / 30
   }
 
   public render(): void {

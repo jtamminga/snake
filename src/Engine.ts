@@ -14,7 +14,6 @@ export class Engine {
 
   // private _menu: MainMenu
   private _stack: LayerStack
-  private _mainMenu: MainMenu
   private _game?: Game
 
   // helpers
@@ -48,17 +47,13 @@ export class Engine {
     // initialize objects
     this._input = new Input()
 
+    // stacks
     this._stack = new LayerStack({
       canvas: args.canvas,
       width: this._worldRenderedWidth,
-      height: this._worldRenderedHeight
+      height: this._worldRenderedHeight,
+      baseLayerFactory: () => this.createMainMenu()
     })
-    this._mainMenu = new MainMenu({
-      canvas: args.canvas,
-      width: this._worldRenderedWidth,
-      height: this._worldRenderedHeight
-    })
-    this._stack.add(this._mainMenu)
     
     // misc
     this._afterUpdate = args.afterUpdate
@@ -81,26 +76,19 @@ export class Engine {
       // update if delta is larger than update interval
       if (delta >= this._updateInterval) {
 
-        // handle main menu selection
-        this._mainMenu.selection.changed(() => {
-          this._stack.add(this.createGame())
-          this._input.reset()
-        })
+        // update input first
+        this._input.update()
+
+        if (this._game && this._input.lastKey.changedTo('shop')) {
+          this._stack.add(this.createShopMenu())
+        }
 
         // update
         this._updateInterval = this._stack.update(this._input)
 
-        // game over state
-        if (this._game?.state.changedTo('over')) {
-          this._stack.add(this.createGameOverMenu())
-        }
-
         // time tracking
         this._lastUpdate = currentTime
       }
-
-      // cleanup stack
-      this._stack.cleanup()
 
       // render
       this._stack.render()
@@ -117,11 +105,26 @@ export class Engine {
     })
   }
 
+  private createMainMenu(): MainMenu {
+    const menu = new MainMenu({
+      canvas: this._canvas,
+      width: this._worldRenderedWidth,
+      height: this._worldRenderedHeight
+    })
+    menu.whenResolved(() => {
+      this._stack.add(this.createGame())
+    })
+    return menu
+  }
+
   private createGame(): Game {
     this._game = new Game({
       canvas: this._canvas,
       width: this._worldRenderedWidth,
       height: this._worldRenderedHeight
+    })
+    this._game.whenResolved(() => {
+      this._stack.add(this.createGameOverMenu())
     })
     return this._game
   }

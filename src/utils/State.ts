@@ -20,13 +20,10 @@ export class State<T> {
     if (this._preState !== this._curState) {
       callback(this._curState)
     }
-    this._preState = this._curState
   }
 
   public changedTo(state: T): boolean {
-    const result = this._curState === state && this._preState !== state
-    this._preState = this._curState
-    return result
+    return this._curState === state && this._preState !== state
   }
 
   public update(state: T): void {
