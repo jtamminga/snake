@@ -1,3 +1,4 @@
+import type { BreedType } from './breed/index.js'
 import { Consumable, type Item, Items, Stone } from './items/index.js'
 import type { Notifier } from './Notifier.js'
 import { Snake } from './Snake.js'
@@ -14,6 +15,7 @@ export class World {
   public constructor(args: WorldArgs) {
     this._notifier = args.notifier
     this._snake = new Snake({
+      breed: args.snakeBreed,
       startX: Math.floor(args.width / 2) - 1,
       startY: Math.floor(args.height / 2) - 1,
       baseSpeed: 1
@@ -95,6 +97,7 @@ export class World {
 
 
 type WorldArgs = {
+  snakeBreed: BreedType
   width: number
   height: number
   notifier: Notifier

@@ -1,3 +1,4 @@
+import type { BreedType } from './breed/index.js'
 import { Game, type Stats } from './Game.js'
 import { GameOverMenu } from './GameOverMenu.js'
 import { LayerStack } from './layers/index.js'
@@ -12,18 +13,17 @@ export class Engine {
   private _input: Input
   private _canvas: CanvasRenderingContext2D
 
-  // private _menu: MainMenu
   private _stack: LayerStack
   private _game?: Game
-
+  
   // helpers
   private _worldRenderedWidth: number
   private _worldRenderedHeight: number   
-
+  
   // game loop timing
   private _lastUpdate: number
   private _updateInterval: number
-
+  
   // misc
   private _afterUpdate: ((context: EngineContext) => void) | undefined
 
@@ -67,6 +67,10 @@ export class Engine {
     this.update()
   }
 
+  private get shopOpen(): boolean {
+    return this._stack.top instanceof ShopMenu
+  }
+
   private update() {
     requestAnimationFrame((currentTime) => {
 
@@ -77,7 +81,7 @@ export class Engine {
       if (delta >= this._updateInterval) {
 
         // open shop
-        if (this._game && this._input.lastKey.consume('shop')) {
+        if (this._game && this._input.lastKey.consume('shop') && !this.shopOpen) {
           this._stack.add(this.createShopMenu())
         }
 
@@ -109,14 +113,16 @@ export class Engine {
       width: this._worldRenderedWidth,
       height: this._worldRenderedHeight
     })
-    menu.whenResolved(() => {
-      this._stack.add(this.createGame())
+    menu.whenResolved(snakeBreed => {
+      this._stack.add(this.createGame(snakeBreed))
     })
     return menu
   }
 
-  private createGame(): Game {
+  private createGame(snakeBreed: BreedType): Game {
+    this._input.reset()
     this._game = new Game({
+      snakeBreed,
       canvas: this._canvas,
       width: this._worldRenderedWidth,
       height: this._worldRenderedHeight
@@ -140,12 +146,20 @@ export class Engine {
       throw new Error('cannot create shop menu if there is no game')
     }
 
-    return new ShopMenu({
+    // save last direction
+    const lastDirection = this._input.direction
+    const menu = new ShopMenu({
       canvas: this._canvas,
       width: this._worldRenderedWidth,
       height: this._worldRenderedHeight,
       snake: this._game.world.snake
     })
+    // restore last direction
+    menu.whenResolved(() => {
+      this._input.restore(lastDirection)
+    })
+
+    return menu
   }
 
 }

@@ -1,9 +1,9 @@
+import type { BreedType } from './breed/index.js'
 import { Coin, Food, Stone } from './items/index.js'
 import { Layer, type LayerArgs } from './layers/index.js'
 import { Notifier } from './Notifier.js'
 import type { Snake } from './Snake.js'
-import { State } from './utils/index.js'
-import type { Input } from './utils/Input.js'
+import { type Input, State } from './utils/index.js'
 import { World } from './World.js'
 
 
@@ -27,6 +27,7 @@ export class Game extends Layer<GameOverReason> {
     this._numUpdates = 0
     this._notifier = new Notifier()
     this._world = new World({
+      snakeBreed: args.snakeBreed,
       notifier: this._notifier,
       width: 8,
       height: 6
@@ -216,6 +217,7 @@ export class Game extends Layer<GameOverReason> {
 
 
 type GameArgs = LayerArgs & {
+  snakeBreed: BreedType
 }
 type GameState =
   | 'playing'

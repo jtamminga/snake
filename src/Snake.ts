@@ -1,11 +1,13 @@
-import { Effects } from './effects/Effects.js'
-import type { Consumable } from './items/Consumable.js'
-import type { Direction } from './utils/index.js'
-import { Position } from './utils/Position.js'
+import { createBreed, type Breed, type BreedType } from './breed/index.js'
+import { Effects } from './effects/index.js'
+import type { Consumable } from './items/index.js'
+import type { Upgrade } from './upgrades/index.js'
+import { type Direction, Position } from './utils/index.js'
 
 
 export class Snake {
 
+  private _breed: Breed
   private _alive: boolean
   private _segments: Position[]
   private _effects: Effects
@@ -13,6 +15,7 @@ export class Snake {
   private _gold: number
 
   public constructor(args: SnakeArgs) {
+    this._breed = createBreed(args.breed)
     this._alive = true
     this._effects = new Effects()
     this._speed = args.baseSpeed
@@ -20,6 +23,10 @@ export class Snake {
     this._segments = [
       new Position(args.startX, args.startY)
     ]
+  }
+
+  public get breed(): Breed {
+    return this._breed
   }
 
   public get alive(): boolean {
@@ -82,12 +89,21 @@ export class Snake {
   }
 
   public eat(item: Consumable): void {
+
+    // add effects from the item
     this._effects.add(item.consume())
+
+    // add effects the breed gets when eating an item
+    this._effects.add(this._breed.effectsFrom(item))
 
     // gained gold
     if (this._effects.gold) {
       this._gold += this._effects.gold.amount
     }
+  }
+
+  public upgrade(upgrade: Upgrade): void {
+    this._gold -= upgrade.cost
   }
 
   public occupies(position: Position): boolean {
@@ -105,4 +121,5 @@ type SnakeArgs = {
   startX: number
   startY: number
   baseSpeed: number
+  breed: BreedType
 }

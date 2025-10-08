@@ -1,8 +1,9 @@
+import type { BreedType } from './breed/index.js'
 import { Layer, type LayerArgs } from './layers/index.js'
 import { Input, Event } from './utils/index.js'
 
 
-export class MainMenu extends Layer<boolean> {
+export class MainMenu extends Layer<BreedType> {
 
   private _middle: number
   private _selection: Event<Selection>
@@ -19,7 +20,7 @@ export class MainMenu extends Layer<boolean> {
 
   public update(input: Input): number {
     if (input.lastKey.consume('enter')) {
-      this.resolve(true)
+      this.resolve('rockEater')
     }
 
     // 30 fps

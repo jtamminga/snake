@@ -1,10 +1,8 @@
 import { Event } from './Event.js'
-import { State } from './State.js'
 
 
 export class Input {
   
-  private _rawLastKeyPressed: Key | undefined
   private _lastKeyPressed: Event<Key>
   private _lastDirectionKeyPressed: Direction
 
@@ -19,6 +17,10 @@ export class Input {
 
   public get direction(): Direction {
     return this._lastDirectionKeyPressed
+  }
+
+  public restore(direction: Direction): void {
+    this._lastDirectionKeyPressed = direction
   }
 
   public reset(): void {

@@ -17,7 +17,7 @@ export class LayerStack extends Layer {
     this._topOpaqueIndex = 0
   }
 
-  private get top(): Layer {
+  public get top(): Layer {
     return this._layers[this._lastIndex]!
   }
 
@@ -35,7 +35,15 @@ export class LayerStack extends Layer {
     return result
   }
 
-  public cleanup(): void {
+  public render(): void {
+    this._canvas.clearRect(0, 0, this._width, this._height)
+    for (let i = this._topOpaqueIndex; i < this._layers.length; i++) {
+      const layer = this._layers[i]!
+      layer.render()
+    }
+  }
+
+  private cleanup(): void {
     if (this.top.resolved) {
       this._layers = this._layers.filter(layer => !layer.resolved)
 
@@ -50,14 +58,6 @@ export class LayerStack extends Layer {
       if (this._layers.length === 0) {
         this.add(this._baseLayerFactory())
       }
-    }
-  }
-
-  public render(): void {
-    this._canvas.clearRect(0, 0, this._width, this._height)
-    for (let i = this._topOpaqueIndex; i < this._layers.length; i++) {
-      const layer = this._layers[i]!
-      layer.render()
     }
   }
 

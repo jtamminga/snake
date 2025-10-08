@@ -1,21 +1,24 @@
 import { Layer, type LayerArgs } from './layers/index.js'
 import type { Snake } from './Snake.js'
-import { Input, Event } from './utils/index.js'
+import { baseUpgrades, type Upgrade } from './upgrades/index.js'
+import { Input } from './utils/index.js'
 
 
 export class ShopMenu extends Layer<boolean> {
 
+  private _snake: Snake
   private _middle: number
-  private _items: ShopItem[]
+  private _items: Upgrade[]
   private _itemIndex: number
   
   public constructor(args: ShopMenuArgs) {
     super(args, false)
+    this._snake = args.snake
     this._middle = args.width / 2
     this._itemIndex = 0
     this._items = [
-      { name: 'Speed reduction', cost: 1 },
-      { name: 'Teleporter', cost: 5 },
+      ...this._snake.breed.upgrades,
+      ...baseUpgrades
     ]
   }
 
@@ -25,6 +28,13 @@ export class ShopMenu extends Layer<boolean> {
     }
     else if (input.lastKey.consume('down')) {
       this._itemIndex += 1
+    }
+    else if (input.lastKey.consume('enter')) {
+      const item = this._items[this._itemIndex]
+      if (item && item.cost <= this._snake.gold) {
+        this._snake.breed.apply(item.id)
+        this._snake.upgrade(item)
+      }
     }
     else if (input.lastKey.consume('esc')) {
       this.resolve(true)
@@ -57,8 +67,4 @@ export class ShopMenu extends Layer<boolean> {
 
 type ShopMenuArgs = LayerArgs & {
   snake: Snake
-}
-type ShopItem = {
-  name: string
-  cost: number
 }
