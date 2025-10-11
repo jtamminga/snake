@@ -1,4 +1,4 @@
 import { QuantityEffect } from './QuantityEffect.js'
 
 
-export class GoldEffect extends QuantityEffect { }
+export class SpeedEffect extends QuantityEffect { }

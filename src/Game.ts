@@ -171,7 +171,7 @@ export class Game extends Layer<GameOverReason> {
       )
     }
     // render snake effect timer
-    if (snake.effects.rockEater) {
+    if (snake.effects.rockEater && snake.effects.rockEater.remaining !== undefined) {
       const head = snake.head
       canvas.font = '50px Tiny5'
       canvas.fillStyle = `rgba(0, 0, 0, 0.1)`

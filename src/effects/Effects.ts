@@ -1,7 +1,7 @@
 import type { Effect } from './Effect.js'
 import { GrowthEffect } from './GrowthEffect.js'
 import { WrapEffect } from './WrapEffect.js'
-import { SpeedBoostEffect } from './SpeedBoostEffect.js'
+import { SpeedEffect } from './SpeedEffect.js'
 import { RockEaterEffect } from './RockEaterEffect.js'
 import { GoldEffect } from './GoldEffect.js'
 
@@ -16,14 +16,14 @@ export class Effects {
   private _gold: GoldEffect | undefined
   private _wrap: WrapEffect | undefined
   private _growth: GrowthEffect | undefined
-  private _speedBoost: SpeedBoostEffect | undefined
+  private _speed: SpeedEffect | undefined
   private _rockEater: RockEaterEffect | undefined
 
   public constructor() {
   }
 
   public get all(): ReadonlyArray<Effect> {
-    return [this._wrap, this._speedBoost, this._growth, this._rockEater]
+    return [this._wrap, this._speed, this._growth, this._rockEater]
       .filter(effect => effect !== undefined)
   }
 
@@ -39,8 +39,8 @@ export class Effects {
     return this._wrap
   }
 
-  public get speedBoost(): SpeedBoostEffect | undefined {
-    return this._speedBoost
+  public get speed(): SpeedEffect | undefined {
+    return this._speed
   }
 
   public get rockEater(): RockEaterEffect | undefined {
@@ -72,9 +72,9 @@ export class Effects {
     }
 
     // update speedboost
-    if (this._speedBoost) {
-      this._speedBoost.update()
-      if (this._speedBoost.expired) this._speedBoost = undefined
+    if (this._speed) {
+      this._speed.update()
+      if (this._speed.expired) this._speed = undefined
     }
 
     // update invincible
@@ -100,7 +100,7 @@ export class Effects {
       }
 
       // add to current growth effect if there is one
-      if (this._growth) {
+      if (this._growth && effect.duration !== undefined) {
         this._growth.addDuration(effect.duration)
       } else {
         this._growth = effect
@@ -112,9 +112,13 @@ export class Effects {
       this._wrap = effect
     }
 
-    // replaces active
-    else if (effect instanceof SpeedBoostEffect) {
-      this._speedBoost = effect
+    // stack with existing if any
+    else if (effect instanceof SpeedEffect) {
+      if (this._speed) {
+        this._speed.addAmount(effect.amount)
+      } else {
+        this._speed = effect
+      }
     }
 
     // replaces active

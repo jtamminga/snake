@@ -1,5 +1,5 @@
 import type { Breed } from './Breed.js'
-import { RockEaterBreed } from './RockEaterBreed.js'
+import { RockEaterBreed, type RockEaterUpgrade } from './RockEaterBreed.js'
 
 
 export type BreedType =
@@ -8,7 +8,7 @@ export type BreedType =
   | 'bomber'
 
 
-export function createBreed(type: BreedType): Breed {
+export function createBreed(type: BreedType): Breed<BreedUpgrade> {
   switch (type) {
     case 'rockEater':
       return new RockEaterBreed()
@@ -17,3 +17,7 @@ export function createBreed(type: BreedType): Breed {
       throw new Error('breed not implement yet')
   }
 }
+
+
+export type BreedUpgrade =
+  | RockEaterUpgrade

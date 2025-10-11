@@ -81,7 +81,7 @@ export class Engine {
       if (delta >= this._updateInterval) {
 
         // open shop
-        if (this._game && this._input.lastKey.consume('shop') && !this.shopOpen) {
+        if (this._game && !this._game.resolved && this._input.lastKey.consume('shop') && !this.shopOpen) {
           this._stack.add(this.createShopMenu())
         }
 

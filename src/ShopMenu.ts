@@ -1,6 +1,7 @@
+import type { BreedUpgrade } from './breed/index.js'
 import { Layer, type LayerArgs } from './layers/index.js'
 import type { Snake } from './Snake.js'
-import { baseUpgrades, type Upgrade } from './upgrades/index.js'
+import { baseUpgrades, type BaseUpgrade, type Upgrade } from './upgrades/index.js'
 import { Input } from './utils/index.js'
 
 
@@ -8,7 +9,7 @@ export class ShopMenu extends Layer<boolean> {
 
   private _snake: Snake
   private _middle: number
-  private _items: Upgrade[]
+  private _items: Upgrade<BaseUpgrade | BreedUpgrade>[]
   private _itemIndex: number
   
   public constructor(args: ShopMenuArgs) {
@@ -31,8 +32,7 @@ export class ShopMenu extends Layer<boolean> {
     }
     else if (input.lastKey.consume('enter')) {
       const item = this._items[this._itemIndex]
-      if (item && item.cost <= this._snake.gold) {
-        this._snake.breed.apply(item.id)
+      if (item && item.available && item.cost <= this._snake.gold) {
         this._snake.upgrade(item)
       }
     }
@@ -51,13 +51,15 @@ export class ShopMenu extends Layer<boolean> {
     canvas.fillRect(0, 0, this._width, this._height)
 
     canvas.font = '100px Tiny5'
-    canvas.fillStyle = 'rgba(0, 0, 0, 1)'
     canvas.fillText('shop', this._middle, 100)
 
     canvas.font = '50px Tiny5'
     for (let i = 0; i < this._items.length; i++) {
       const item = this._items[i]!
       const isActive = this._itemIndex === i
+      canvas.fillStyle = item.available
+        ? 'rgba(0, 0, 0, 1)'
+        : 'rgba(0, 0, 0, 0.5)'
       canvas.fillText(isActive ? `> ${item.name} <` : item.name, this._middle, (i * 50) + 200)
     }
   }

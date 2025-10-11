@@ -4,7 +4,9 @@ import { Effect } from './Effect.js'
 export class GrowthEffect extends Effect {
 
   public addDuration(amount: number): void {
-    this._duration += amount
+    if (this._duration !== undefined) {
+      this._duration += amount
+    }
   }
 
 }

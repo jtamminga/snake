@@ -1,31 +1,31 @@
-import { createBreed, type Breed, type BreedType } from './breed/index.js'
-import { Effects } from './effects/index.js'
+import { createBreed, type Breed, type BreedType, type BreedUpgrade } from './breed/index.js'
+import { Effects, SpeedEffect } from './effects/index.js'
 import type { Consumable } from './items/index.js'
-import type { Upgrade } from './upgrades/index.js'
+import type { BaseUpgrade, Upgrade } from './upgrades/index.js'
 import { type Direction, Position } from './utils/index.js'
 
 
 export class Snake {
 
-  private _breed: Breed
+  private _breed: Breed<BreedUpgrade>
   private _alive: boolean
   private _segments: Position[]
   private _effects: Effects
-  private _speed: number
+  private _baseSpeed: number
   private _gold: number
 
   public constructor(args: SnakeArgs) {
     this._breed = createBreed(args.breed)
     this._alive = true
     this._effects = new Effects()
-    this._speed = args.baseSpeed
+    this._baseSpeed = args.baseSpeed
     this._gold = 0
     this._segments = [
       new Position(args.startX, args.startY)
     ]
   }
 
-  public get breed(): Breed {
+  public get breed(): Breed<BreedUpgrade> {
     return this._breed
   }
 
@@ -42,8 +42,8 @@ export class Snake {
   }
 
   public get speed(): number {
-    const boost = this._effects.speedBoost?.amount ?? 0
-    return this._speed + boost
+    const effect = this._effects.speed?.amount ?? 0
+    return this._baseSpeed + this.length + effect
   }
 
   public get gold(): number {
@@ -102,8 +102,29 @@ export class Snake {
     }
   }
 
-  public upgrade(upgrade: Upgrade): void {
+  public upgrade(upgrade: Upgrade<BaseUpgrade | BreedUpgrade>): void {
+
+    // make sure we have enough gold
+    if (upgrade.cost > this._gold) {
+      throw new Error(`cannot afford upgrade ${upgrade.name}`)
+    }
+
+    // reduce gold by upgrade cost
     this._gold -= upgrade.cost
+
+    // check if breed specific upgrade
+    if (this._breed.isBreedSpecific(upgrade)) {
+      this._breed.apply(upgrade)
+      return
+    }
+
+    // otherwise
+    switch (upgrade.id) {
+      case 'speedReduct':
+        this._effects.add([new SpeedEffect({ amount: -1 })])
+        break
+    }
+    
   }
 
   public occupies(position: Position): boolean {

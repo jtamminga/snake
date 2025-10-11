@@ -5,16 +5,11 @@ export const baseUpgrades: Upgrade<BaseUpgrade>[] = [
   {
     id: 'speedReduct',
     name: 'Speed reduction',
-    cost: 1
-  },
-  {
-    id: 'teleporter',
-    name: 'Teleporter',
-    cost: 5
-  },
+    cost: 1,
+    available: true
+  }
 ]
 
 
 export type BaseUpgrade =
   | 'speedReduct'
-  | 'teleporter' 
