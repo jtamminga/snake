@@ -86,9 +86,13 @@ export class Effects {
 
   private addEffect(effect: Effect): void {
 
-    // single instance
+    // stack effect
     if (effect instanceof GoldEffect) {
-      this._gold = effect
+      if (this._gold) {
+        this._gold.addAmount(effect.amount)
+      } else {
+        this._gold = effect
+      }
     }
 
     // single instance (increases duration of active)

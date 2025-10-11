@@ -1,7 +1,7 @@
 import { createBreed, type Breed, type BreedType, type BreedUpgrade } from './breed/index.js'
 import { Effects, SpeedEffect } from './effects/index.js'
 import type { Consumable } from './items/index.js'
-import type { BaseUpgrade, Upgrade } from './upgrades/index.js'
+import type { UpgradeData } from './upgrades/index.js'
 import { type Direction, Position } from './utils/index.js'
 
 
@@ -12,14 +12,14 @@ export class Snake {
   private _segments: Position[]
   private _effects: Effects
   private _baseSpeed: number
-  private _gold: number
+  private _baseGold: number
 
   public constructor(args: SnakeArgs) {
     this._breed = createBreed(args.breed)
     this._alive = true
     this._effects = new Effects()
     this._baseSpeed = args.baseSpeed
-    this._gold = 0
+    this._baseGold = 0
     this._segments = [
       new Position(args.startX, args.startY)
     ]
@@ -42,12 +42,13 @@ export class Snake {
   }
 
   public get speed(): number {
-    const effect = this._effects.speed?.amount ?? 0
-    return this._baseSpeed + this.length + effect
+    const speedEffects = this._effects.speed?.amount ?? 0
+    return this._baseSpeed + this.length + speedEffects
   }
 
   public get gold(): number {
-    return this._gold
+    const goldEffects = this._effects.gold?.amount ?? 0
+    return this._baseGold + goldEffects
   }
 
   public get segments(): ReadonlyArray<Position> {
@@ -94,37 +95,13 @@ export class Snake {
     this._effects.add(item.consume())
 
     // add effects the breed gets when eating an item
-    this._effects.add(this._breed.effectsFrom(item))
-
-    // gained gold
-    if (this._effects.gold) {
-      this._gold += this._effects.gold.amount
-    }
+    this._effects.add(this._breed.effectsFromItem(item))
   }
 
-  public upgrade(upgrade: Upgrade<BaseUpgrade | BreedUpgrade>): void {
+  public upgrade(upgradeId: BreedUpgrade): void {
 
-    // make sure we have enough gold
-    if (upgrade.cost > this._gold) {
-      throw new Error(`cannot afford upgrade ${upgrade.name}`)
-    }
-
-    // reduce gold by upgrade cost
-    this._gold -= upgrade.cost
-
-    // check if breed specific upgrade
-    if (this._breed.isBreedSpecific(upgrade)) {
-      this._breed.apply(upgrade)
-      return
-    }
-
-    // otherwise
-    switch (upgrade.id) {
-      case 'speedReduct':
-        this._effects.add([new SpeedEffect({ amount: -1 })])
-        break
-    }
-    
+    // apply upgrade and effects
+    this._effects.add(this._breed.effectsFromUpgrade(upgradeId))
   }
 
   public occupies(position: Position): boolean {

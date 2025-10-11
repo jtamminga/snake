@@ -18,7 +18,7 @@ const engine = new Engine({
   worldWidth: 8,
   worldHeight: 6,
   baseUpdateInterval: 500,
-  snakeSpeedMult: 10,
+  snakeSpeedMult: 8,
   afterUpdate: context => {
     lengthStatEl.innerHTML = context.snakeLength.toString()
     movesStatEl.innerHTML = context.moves.toString()

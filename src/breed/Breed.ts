@@ -1,6 +1,6 @@
 import type { Effect } from '../effects/index.js'
 import type { Item } from '../items/index.js'
-import type { Upgrade, UpgradeType } from '../upgrades/index.js'
+import type { Upgrade, UpgradeData, UpgradeType } from '../upgrades/index.js'
 
 
 export abstract class Breed<TUpgrade extends UpgradeType = UpgradeType> {
@@ -8,21 +8,18 @@ export abstract class Breed<TUpgrade extends UpgradeType = UpgradeType> {
   protected _duration: number
   protected _upgrades: Map<TUpgrade, Upgrade<TUpgrade>>
 
-  public constructor() {
+  public constructor(upgrades: ReadonlyArray<Upgrade<TUpgrade>>) {
     this._duration = 5
     this._upgrades = new Map<TUpgrade, Upgrade<TUpgrade>>()
+    upgrades.forEach(upgrade => this._upgrades.set(upgrade.id, upgrade))
   }
 
-  public get upgrades(): ReadonlyArray<Upgrade<TUpgrade>> {
+  public get upgrades(): ReadonlyArray<UpgradeData<TUpgrade>> {
     return Array.from(this._upgrades.values())
   }
 
-  public isBreedSpecific(upgrade: Upgrade): upgrade is Upgrade<TUpgrade> {
-    return this._upgrades.has(upgrade.id as TUpgrade)
-  }
+  public abstract effectsFromItem(item: Item): ReadonlyArray<Effect>
 
-  public abstract apply(upgrade: Upgrade<TUpgrade>): void
-  
-  public abstract effectsFrom(item: Item): ReadonlyArray<Effect>
+  public abstract effectsFromUpgrade(upgradeId: TUpgrade): ReadonlyArray<Effect>
 
 }
