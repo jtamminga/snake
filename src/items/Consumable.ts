@@ -4,23 +4,22 @@ import { Item, type ItemArgs } from './Item.js'
 
 export abstract class Consumable extends Item {
 
-  protected _consumed: boolean
+  protected _consumedAt: number | undefined
 
   public constructor(args: ItemArgs) {
     super(args)
-    this._consumed = false
   }
 
   public get consumed(): boolean {
-    return this._consumed
+    return this._consumedAt !== undefined
   }
 
   public override get exists(): boolean {
-    return super.exists && !this._consumed
+    return super.exists && this._consumedAt === undefined
   }
 
   public consume(): ReadonlyArray<Effect> {
-    this._consumed = true
+    this._consumedAt = this._updates
     return this.effects()
   }
 

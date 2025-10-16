@@ -44,12 +44,18 @@ export class World {
     return this._snake
   }
 
+  /**
+   * All items including items that might not exist anymore
+   */
   public get items(): ReadonlyArray<Item> {
     return this._items.all
   }
 
-  public get everything() {
-    return [this._snake, ...this.items]
+  /**
+   * Only existing items
+   */
+  public get existing() {
+    return [this._snake, ...this._items.existing]
   }
 
   public update(direction: Direction): void {

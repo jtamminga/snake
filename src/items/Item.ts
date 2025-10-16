@@ -59,14 +59,6 @@ export abstract class Item {
   }
 
   /**
-   * True if the item is safe to be removed
-   */
-  public get disposable(): boolean {
-    return (this._duration !== undefined && this._updates >= (this._duration + 1))
-      || (this._destroyedAt !== undefined && this._updates >= (this._destroyedAt + 1))
-  }
-
-  /**
    * Mark item to be destroyed.
    * The instance will stick around for a while to allow animations to finish.
    */

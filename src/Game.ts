@@ -78,7 +78,7 @@ export class Game extends Layer<GameOverReason> {
         this.renderCoin(item)
       }
       else if (item instanceof Food) {
-        this.renderFood(item)
+        this.renderFood(item, progress)
       }
       else if (item instanceof Stone) {
         this.renderStone(item, progress)
@@ -111,12 +111,15 @@ export class Game extends Layer<GameOverReason> {
     canvas.closePath()
   }
 
-  private renderFood(food: Food): void {
+  private renderFood(food: Food, progress: number): void {
     const canvas = this._canvas
     const pxSize = this._pxSize
 
-    const foodSize = this._halfPxSize
+    const foodSize = food.justSpawned
+      ? lerp(0, this._halfPxSize, progress)
+      : this._halfPxSize
     const offset = (pxSize - foodSize) / 2
+    
     canvas.fillStyle = `rgba(255, 153, 0, 1)`
     canvas.fillRect(
       food.position.x * pxSize + offset,
@@ -131,7 +134,12 @@ export class Game extends Layer<GameOverReason> {
     const pxSize = this._pxSize
     const halfPxSize = this._halfPxSize
 
-    canvas.fillStyle = `rgba(70, 70, 70, ${stone.spawning ? '0.3' : '1'})`
+    const opacity = stone.justSpawned
+      ? lerp(0.3, 1, progress, t => Math.pow(t, 3))
+      : stone.spawning
+        ? 0.3
+        : 1
+    canvas.fillStyle = `rgba(70, 70, 70, ${opacity})`
     canvas.fillRect(
       lerp(stone.prePosition.x * pxSize, stone.position.x * pxSize, progress),
       lerp(stone.prePosition.y * pxSize, stone.position.y * pxSize, progress),

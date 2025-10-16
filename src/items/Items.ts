@@ -13,38 +13,40 @@ export class Items {
   private readonly _spawner: Spawner
   private readonly _notifier: Notifier
   private _world: World
-  private _items: Item[]
+  private _items: ItemWrapper[]
+  private _updates: number
 
   public constructor(args: ItemsArgs) {
     this._spawner = new Spawner(args)
     this._notifier = args.notifier
     this._world = args.world
     this._items = []
+    this._updates = 0
   }
 
+  /**
+   * All items including items that might not exist anymore
+   */
   public get all(): ReadonlyArray<Item> {
     return this._items
   }
 
-  public at(position: Position): Item | undefined {
-    return this._items.find(item => item.occupies(position) && item.spawned)
+  /**
+   * Only existing items
+   */
+  public get existing(): ReadonlyArray<Item> {
+    return this._items.filter(item => item.exists)
   }
 
-  public consumeAt(position: Position): Item | undefined {
-    // try to find item at position
-    const itemIndex = this._items.findIndex(item =>
-      item.occupies(position) && item.spawned)
-
-    if (itemIndex !== -1) {
-      // remove consumed item
-      const [item] = this._items.splice(itemIndex, 1)
-      return item
-    }
-
-    return undefined
+  public at(position: Position): Item | undefined {
+    return this.existing.find(item => item.occupies(position) && item.spawned)
   }
 
   public update(): void {
+
+    // filter out items that are disposable
+    this._items = this._items.filter(item => 
+      item.nonExistentAt === undefined || this._updates <= item.nonExistentAt)
 
     // update and check if items should be marked to destroy
     for (const item of this._items) {
@@ -55,6 +57,13 @@ export class Items {
       // check if items should be marked to destroy
       // items will be actually discarded later (allowing for animations to finish)
       if (!item.exists) {
+
+        // mark when this item went non existent
+        if (item.nonExistentAt === undefined) {
+          item.nonExistentAt = this._updates
+        }
+
+        // skip to the next item
         continue
       }
 
@@ -63,9 +72,9 @@ export class Items {
         item.destroy()
       }
 
-      // check for stones that just spawned, if blocked then we discard
+      // check for items that just spawned, if blocked then we discard
       else if (item.justSpawned) {
-        const blocked = this._world.everything
+        const blocked = this._world.existing
           .filter(i => i !== item)
           .some(i => i.occupies(item.position))
 
@@ -78,11 +87,11 @@ export class Items {
 
     }
 
-    // filter out items that are disposable
-    this._items.filter(item => !item.disposable)
-
     // add items from spawner
     this._items.push(...this._spawner.next())
+
+    // track number of updates
+    this._updates += 1
   }
 
 }
@@ -92,3 +101,4 @@ type ItemsArgs = {
   notifier: Notifier
   world: World
 }
+type ItemWrapper = Item & {nonExistentAt?: number}

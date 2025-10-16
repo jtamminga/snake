@@ -79,7 +79,7 @@ export class Spawner {
   private randomPosition(): Position {
     const world = this._world
 
-    const worldObjects = [...world.everything, ...this._spawningItems]
+    const worldObjects = [...world.existing, ...this._spawningItems]
     const availableSpots = world.area - world.snake.length - world.items.length - this._spawningItems.length
     const randNum = Math.floor(Math.random() * availableSpots)
 

@@ -6,10 +6,15 @@ import type { ItemArgs } from './Item.js'
 
 export class Stone extends Consumable {
 
+  // track previous position and when
+  private _pushedAt: number
   private _prePosition: Position
 
   public constructor(args: ItemArgs) {
     super(args)
+
+    // setup previous position
+    this._pushedAt = this._updates
     this._prePosition = this._position
   }
 
@@ -18,8 +23,23 @@ export class Stone extends Consumable {
   }
 
   public push(direction: Direction): void {
+
+    // set previous position
+    this._pushedAt = this._updates
     this._prePosition = this._position
+
+    // set updated position
     this._position = this._position.apply(direction)
+  }
+
+  public override update(): void {
+
+    // if this is a future update the previous position
+    if (this._updates > this._pushedAt) {
+      this._prePosition = this._position
+    }
+
+    super.update()
   }
 
   protected effects(): ReadonlyArray<Effect> {
