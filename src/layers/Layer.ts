@@ -30,7 +30,7 @@ export abstract class Layer<TResolve = any> {
 
   public abstract update(input: Input): number
 
-  public abstract render(): void
+  public abstract render(progress: number): void
 
 }
 

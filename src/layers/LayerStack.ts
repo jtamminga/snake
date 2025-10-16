@@ -35,11 +35,17 @@ export class LayerStack extends Layer {
     return result
   }
 
-  public render(): void {
+  public render(progress: number): void {
     this._canvas.clearRect(0, 0, this._width, this._height)
     for (let i = this._topOpaqueIndex; i < this._layers.length; i++) {
       const layer = this._layers[i]!
-      layer.render()
+      // only top layer renders with actual progress
+      // TODO: all other layers should get their last progress value
+      layer.render(
+        i === this._layers.length - 1
+          ? progress
+          : 0
+      )
     }
   }
 

@@ -1,8 +1,7 @@
 import { createBreed, type Breed, type BreedType, type BreedUpgrade } from './breed/index.js'
-import { Effects, SpeedEffect } from './effects/index.js'
+import { Effects } from './effects/index.js'
 import type { Consumable } from './items/index.js'
-import type { UpgradeData } from './upgrades/index.js'
-import { type Direction, Position } from './utils/index.js'
+import { Position, type Direction } from './utils/index.js'
 
 
 export class Snake {
@@ -13,6 +12,7 @@ export class Snake {
   private _effects: Effects
   private _baseSpeed: number
   private _baseGold: number
+  private _preTail: Position
 
   public constructor(args: SnakeArgs) {
     this._breed = createBreed(args.breed)
@@ -20,9 +20,10 @@ export class Snake {
     this._effects = new Effects()
     this._baseSpeed = args.baseSpeed
     this._baseGold = 0
-    this._segments = [
-      new Position(args.startX, args.startY)
-    ]
+
+    const startPos = new Position(args.startX, args.startY)
+    this._segments = [startPos]
+    this._preTail = startPos
   }
 
   public get breed(): Breed<BreedUpgrade> {
@@ -35,6 +36,10 @@ export class Snake {
 
   public get head(): Position {
     return this._segments[0]!
+  }
+
+  public get tail(): Position {
+    return this._segments[this._segments.length - 1]!
   }
 
   public get length(): number {
@@ -59,8 +64,15 @@ export class Snake {
     return this._effects
   }
 
+  public get preTail(): Position {
+    return this._preTail
+  }
+
   public move(direction: Direction): void {
     const segments = this._segments
+
+    // store previous states
+    this._preTail = this.tail
 
     // updated head
     const updatedHead = this.head.apply(direction)

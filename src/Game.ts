@@ -3,7 +3,7 @@ import { Coin, Food, Stone } from './items/index.js'
 import { Layer, type LayerArgs } from './layers/index.js'
 import { Notifier } from './Notifier.js'
 import type { Snake } from './Snake.js'
-import { type Input, State } from './utils/index.js'
+import { type Input, lerp, State } from './utils/index.js'
 import { World } from './World.js'
 
 
@@ -70,7 +70,7 @@ export class Game extends Layer<GameOverReason> {
     return this._baseInterval - (snake.speed * this._snakeSpeedMult)
   }
 
-  public render(): void {
+  public render(progress: number): void {
 
     // items
     for (const item of this._world.items) {
@@ -81,12 +81,12 @@ export class Game extends Layer<GameOverReason> {
         this.renderFood(item)
       }
       else if (item instanceof Stone) {
-        this.renderStone(item)
+        this.renderStone(item, progress)
       }
     }
 
     // snake
-    this.renderSnake(this._world.snake)
+    this.renderSnake(this._world.snake, progress)
 
     // notifications
     this.renderNotifications(this._notifier)
@@ -126,18 +126,17 @@ export class Game extends Layer<GameOverReason> {
     )
   }
 
-  private renderStone(stone: Stone): void {
+  private renderStone(stone: Stone, progress: number): void {
     const canvas = this._canvas
     const pxSize = this._pxSize
-    const pxPadding = this._pxPadding
     const halfPxSize = this._halfPxSize
 
     canvas.fillStyle = `rgba(70, 70, 70, ${stone.spawning ? '0.3' : '1'})`
     canvas.fillRect(
-      stone.position.x * pxSize + pxPadding,
-      stone.position.y * pxSize + pxPadding,
-      pxSize - (pxPadding * 2),
-      pxSize - (pxPadding * 2),
+      lerp(stone.prePosition.x * pxSize, stone.position.x * pxSize, progress),
+      lerp(stone.prePosition.y * pxSize, stone.position.y * pxSize, progress),
+      pxSize,
+      pxSize
     )
 
     if (stone.spawning) {
@@ -151,35 +150,58 @@ export class Game extends Layer<GameOverReason> {
     }
   }
 
-  private renderSnake(snake: Snake): void {
+  private renderSnake(snake: Snake, progress: number): void {
     const canvas = this._canvas
     const pxSize = this._pxSize
-    const pxPadding = this._pxPadding
     const halfPxSize = this._halfPxSize
+
+    const preTail = snake.preTail
+    const curTail = snake.tail
+    const curHead = snake.head
+    const preHead = snake.length > 1
+      ? snake.segments[1]!
+      : preTail
+
+    const headX = lerp(preHead.x * pxSize, curHead.x * pxSize, progress)
+    const headY = lerp(preHead.y * pxSize, curHead.y * pxSize, progress)
 
     canvas.fillStyle = snake.alive
       ? snake.effects.rockEater
         ? 'rgba(255, 217, 0, 1)'
         : 'green'
       : 'red'
-    for (const seg of snake.segments) {
+
+    // tail
+    canvas.fillRect(
+      lerp(preTail.x * pxSize, curTail.x * pxSize, progress),
+      lerp(preTail.y * pxSize, curTail.y * pxSize, progress),
+      pxSize,
+      pxSize
+    )
+
+    // body (minus head)
+    for (let i = 1; i < snake.length; i++) {
+      const seg = snake.segments[i]!
       canvas.fillRect(
-        seg.x * pxSize + pxPadding,
-        seg.y * pxSize + pxPadding,
-        pxSize - (pxPadding * 2),
-        pxSize - (pxPadding * 2),
+        seg.x * pxSize ,
+        seg.y * pxSize,
+        pxSize,
+        pxSize,
       )
     }
+
+    // head
+    canvas.fillRect(headX, headY, pxSize, pxSize)
+
     // render snake effect timer
     if (snake.effects.rockEater && snake.effects.rockEater.remaining !== undefined) {
-      const head = snake.head
       canvas.font = '50px Tiny5'
       canvas.fillStyle = `rgba(0, 0, 0, 0.1)`
       canvas.fillText(
         // made more sense when it shows updates left
         (snake.effects.rockEater.remaining - 1).toString(),
-        head.x * pxSize + halfPxSize + 2,
-        head.y * pxSize + halfPxSize
+        headX + halfPxSize + 2,
+        headY + halfPxSize
       )
     }
   }

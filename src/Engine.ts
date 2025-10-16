@@ -77,6 +77,9 @@ export class Engine {
       // calculate time since last update
       const delta = currentTime - this._lastUpdate
 
+      // render
+      this._stack.render(Math.min(delta / this._updateInterval, 1))
+
       // update if delta is larger than update interval
       if (delta >= this._updateInterval) {
 
@@ -88,19 +91,16 @@ export class Engine {
         // update
         this._updateInterval = this._stack.update(this._input)
 
+        // post update
+        this._afterUpdate?.(this._game?.stats ?? {
+          moves: 0,
+          snakeLength: 0,
+          gold: 0
+        })
+
         // time tracking
         this._lastUpdate = currentTime
       }
-
-      // render
-      this._stack.render()
-
-      // post update
-      this._afterUpdate?.(this._game?.stats ?? {
-        moves: 0,
-        snakeLength: 0,
-        gold: 0
-      })
 
       // loop
       this.update()

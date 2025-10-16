@@ -45,22 +45,26 @@ export class Items {
   }
 
   public update(): void {
-    this._items.forEach(item => item.update())
-    this._items = this._items.filter(item => {
 
-      // keep items that exist
-      if (!item.exists) {
-        return false
-      }
-
-      // keep items still in the bounds of this world
-      if (!this._world.bounds.contains(item.position)) {
-        console.debug('item pushed off')
-        return false
-      }
+    // update and check if items should be marked to destroy
+    for (const item of this._items) {
       
-      // check for stones that just spawned, if blocked then we don't keep them
-      if (item.justSpawned) {
+      // update item
+      item.update()
+
+      // check if items should be marked to destroy
+      // items will be actually discarded later (allowing for animations to finish)
+      if (!item.exists) {
+        continue
+      }
+
+      // item outside of bounds
+      if (!this._world.bounds.contains(item.position)) {
+        item.destroy()
+      }
+
+      // check for stones that just spawned, if blocked then we discard
+      else if (item.justSpawned) {
         const blocked = this._world.everything
           .filter(i => i !== item)
           .some(i => i.occupies(item.position))
@@ -68,12 +72,14 @@ export class Items {
         // blocked
         if (blocked) {
           this._notifier.add({ message: 'stone blocked', position: item.position })
-          return false
+          item.destroy()
         }
       }
 
-      return true
-    })
+    }
+
+    // filter out items that are disposable
+    this._items.filter(item => !item.disposable)
 
     // add items from spawner
     this._items.push(...this._spawner.next())
