@@ -58,6 +58,10 @@ export abstract class Item {
     return this._spawningDuration - this._updates
   }
 
+  public get justDestroyed(): boolean {
+    return this._destroyedAt === this._updates
+  }
+
   /**
    * Mark item to be destroyed.
    * The instance will stick around for a while to allow animations to finish.

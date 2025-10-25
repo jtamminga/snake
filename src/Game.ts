@@ -3,7 +3,7 @@ import { Coin, Food, Stone } from './items/index.js'
 import { Layer, type LayerArgs } from './layers/index.js'
 import { Notifier } from './Notifier.js'
 import type { Snake } from './Snake.js'
-import { type Input, lerp, State } from './utils/index.js'
+import { type Input, lerp, Position, State } from './utils/index.js'
 import { World } from './World.js'
 
 
@@ -134,6 +134,11 @@ export class Game extends Layer<GameOverReason> {
     const pxSize = this._pxSize
     const halfPxSize = this._halfPxSize
 
+    // don't render if stone doesn't exist
+    if (!stone.exists && !stone.justDestroyed) {
+      return
+    }
+
     const opacity = stone.justSpawned
       ? lerp(0.3, 1, progress, t => Math.pow(t, 3))
       : stone.spawning
@@ -163,6 +168,7 @@ export class Game extends Layer<GameOverReason> {
     const pxSize = this._pxSize
     const halfPxSize = this._halfPxSize
 
+    // cur/pre position of head/tail
     const preTail = snake.preTail
     const curTail = snake.tail
     const curHead = snake.head
@@ -170,22 +176,26 @@ export class Game extends Layer<GameOverReason> {
       ? snake.segments[1]!
       : preTail
 
-    const headX = lerp(preHead.x * pxSize, curHead.x * pxSize, progress)
-    const headY = lerp(preHead.y * pxSize, curHead.y * pxSize, progress)
+    // fake pre head pos & cur tail pos (to handle proper lerp while teleporting)
+    const fakePreHead = this.calcPreHead(curHead, preHead)
+    const fakeCurTail = this.calcCurTail(curTail, preTail)
 
+    // lerp head
+    const headX = lerp(fakePreHead.x * pxSize, curHead.x * pxSize, progress)
+    const headY = lerp(fakePreHead.y * pxSize, curHead.y * pxSize, progress)
+    // lerp tail
+    const tailX = lerp(preTail.x * pxSize, fakeCurTail.x * pxSize, progress)
+    const tailY = lerp(preTail.y * pxSize, fakeCurTail.y * pxSize, progress)
+
+    // set fill style
     canvas.fillStyle = snake.alive
       ? snake.effects.rockEater
         ? 'rgba(255, 217, 0, 1)'
         : 'green'
       : 'red'
 
-    // tail
-    canvas.fillRect(
-      lerp(preTail.x * pxSize, curTail.x * pxSize, progress),
-      lerp(preTail.y * pxSize, curTail.y * pxSize, progress),
-      pxSize,
-      pxSize
-    )
+    // render tail
+    canvas.fillRect(tailX, tailY, pxSize, pxSize)
 
     // body (minus head)
     for (let i = 1; i < snake.length; i++) {
@@ -241,6 +251,32 @@ export class Game extends Layer<GameOverReason> {
     }
     canvas.shadowBlur = 0
     canvas.lineWidth = 0
+  }
+
+  private calcPreHead(cur: Position, pre: Position): Position {
+    if (cur.adjacentTo(pre)) {
+      return pre
+    }
+    else {
+      const dir = cur.from(pre)
+      if (dir === undefined) {
+        throw new Error('could not calculate direction')
+      }
+      return cur.apply(dir)
+    }
+  }
+  
+  private calcCurTail(cur: Position, pre: Position): Position {
+    if (cur.adjacentTo(pre)) {
+      return cur
+    }
+    else {
+      const dir = cur.to(pre)
+      if (dir === undefined) {
+        throw new Error('could not calculate direction')
+      }
+      return pre.apply(dir)
+    }
   }
 
 }

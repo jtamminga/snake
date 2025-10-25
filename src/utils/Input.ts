@@ -1,3 +1,4 @@
+import type { Direction } from './Direction.js'
 import { Event } from './Event.js'
 
 
@@ -59,9 +60,4 @@ export class Input {
 }
 
 
-export type Direction =
-  | 'up'
-  | 'down'
-  | 'right'
-  | 'left'
 export type Key = Direction | 'enter' | 'esc' | 'shop'
