@@ -1,7 +1,7 @@
 import { createBreed, type Breed, type BreedType, type BreedUpgrade } from './breed/index.js'
 import { Effects } from './effects/index.js'
 import type { Consumable } from './items/index.js'
-import { Position, type Direction } from './utils/index.js'
+import { Direction, Position } from './utils/index.js'
 
 
 export class Snake {
@@ -13,6 +13,7 @@ export class Snake {
   private _baseSpeed: number
   private _baseGold: number
   private _preTail: Position
+  private _curDirection: Direction | undefined
 
   public constructor(args: SnakeArgs) {
     this._breed = createBreed(args.breed)
@@ -74,8 +75,14 @@ export class Snake {
     // store previous states
     this._preTail = this.tail
 
+    // only update direction if it isn't the opposite of current direction
+    // provides some safety so we don't eat ourselves accidentially 
+    const newDirection = this._curDirection === Direction.opposite(direction)
+      ? this._curDirection
+      : direction
+    
     // updated head
-    const updatedHead = this.head.apply(direction)
+    const updatedHead = this.head.apply(newDirection)
 
     // make sure we didn't eat ourselves
     if (this._segments.some(seg => seg.equals(updatedHead))) {
@@ -94,6 +101,9 @@ export class Snake {
 
     // update effects
     this._effects.update()
+
+    // update current direction
+    this._curDirection = newDirection
   }
 
   public teleport(position: Position): void {
