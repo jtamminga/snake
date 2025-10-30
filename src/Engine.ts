@@ -12,7 +12,6 @@ export class Engine {
   // main objects
   private _input: Input
   private _canvas: CanvasRenderingContext2D
-
   private _stack: LayerStack
   private _game?: Game
   
@@ -21,8 +20,7 @@ export class Engine {
   private _worldRenderedHeight: number   
   
   // game loop timing
-  private _lastUpdate: number
-  private _updateInterval: number
+  private _lastFrame: number
   
   // misc
   private _afterUpdate: ((context: EngineContext) => void) | undefined
@@ -41,8 +39,7 @@ export class Engine {
     this._canvas.shadowColor = 'black'
 
     // game loop properties
-    this._lastUpdate = 0
-    this._updateInterval = 0
+    this._lastFrame = 0
 
     // initialize objects
     this._input = new Input()
@@ -72,35 +69,28 @@ export class Engine {
   }
 
   private update() {
-    requestAnimationFrame((currentTime) => {
+    requestAnimationFrame(currentTime => {
 
-      // calculate time since last update
-      const delta = currentTime - this._lastUpdate
+      // calculate time since last frame
+      const delta = currentTime - this._lastFrame
 
-      // render
-      this._stack.render(Math.min(delta / this._updateInterval, 1))
-
-      // update if delta is larger than update interval
-      if (delta >= this._updateInterval) {
-
-        // open shop
-        if (this._game && !this._game.resolved && this._input.lastKey.consume('shop') && !this.shopOpen) {
-          this._stack.add(this.createShopMenu())
-        }
-
-        // update
-        this._updateInterval = this._stack.update(this._input)
-
-        // post update
-        this._afterUpdate?.(this._game?.stats ?? {
-          moves: 0,
-          snakeLength: 0,
-          gold: 0
-        })
-
-        // time tracking
-        this._lastUpdate = currentTime
+      // open shop
+      if (this._game && !this._game.resolved && this._input.lastKey.consume('shop') && !this.shopOpen) {
+        this._stack.add(this.createShopMenu())
       }
+
+      // advance engine by one frame
+      this._stack.advanceFrame(delta)
+
+      // post update
+      // TODO: remove (expensive)
+      this._afterUpdate?.(this._game?.stats ?? {
+        moves: 0,
+        snakeLength: 0,
+        gold: 0
+      })
+
+      this._lastFrame = currentTime
 
       // loop
       this.update()
@@ -109,6 +99,7 @@ export class Engine {
 
   private createMainMenu(): MainMenu {
     const menu = new MainMenu({
+      input: this._input,
       canvas: this._canvas,
       width: this._worldRenderedWidth,
       height: this._worldRenderedHeight
@@ -123,6 +114,7 @@ export class Engine {
     this._input.reset()
     this._game = new Game({
       snakeBreed,
+      input: this._input,
       canvas: this._canvas,
       width: this._worldRenderedWidth,
       height: this._worldRenderedHeight
@@ -135,6 +127,7 @@ export class Engine {
 
   private createGameOverMenu(): GameOverMenu {
     return new GameOverMenu({
+      input: this._input,
       canvas: this._canvas,
       width: this._worldRenderedWidth,
       height: this._worldRenderedHeight
@@ -149,6 +142,7 @@ export class Engine {
     // save last direction
     const lastDirection = this._input.direction
     const menu = new ShopMenu({
+      input: this._input,
       canvas: this._canvas,
       width: this._worldRenderedWidth,
       height: this._worldRenderedHeight,

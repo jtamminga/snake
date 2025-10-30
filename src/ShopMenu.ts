@@ -2,7 +2,7 @@ import type { BreedUpgrade } from './breed/index.js'
 import { Layer, type LayerArgs } from './layers/index.js'
 import type { Snake } from './Snake.js'
 import { type UpgradeData } from './upgrades/index.js'
-import { getLines, Input } from './utils/index.js'
+import { getLines } from './utils/index.js'
 
 
 export class ShopMenu extends Layer<boolean> {
@@ -20,7 +20,9 @@ export class ShopMenu extends Layer<boolean> {
     this._items = this._snake.breed.upgrades
   }
 
-  public update(input: Input): number {
+  public update(): number {
+    const input = this._input
+
     if (input.lastKey.consume('up')) {
       if (this._itemIndex > 0) {
         this._itemIndex -= 1

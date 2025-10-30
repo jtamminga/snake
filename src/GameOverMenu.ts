@@ -11,8 +11,8 @@ export class GameOverMenu extends Layer<boolean> {
     this._middle = args.width / 2
   }
 
-  public update(input: Input): number {
-    if (input.lastKey.consume('enter')) {
+  public update(): number {
+    if (this._input.lastKey.consume('enter')) {
       this.resolve(true)
     }
 

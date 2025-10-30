@@ -50,11 +50,11 @@ export class Game extends Layer<GameOverReason> {
     }
   }
 
-  public update(input: Input): number {
+  public update(): number {
     const {snake} = this._world
 
     this._notifier.update()
-    this._world.update(input.direction)
+    this._world.update(this._input.direction)
 
     if (!snake.alive) {
       this._state.update('over')
@@ -70,7 +70,7 @@ export class Game extends Layer<GameOverReason> {
     return this._baseInterval - (snake.speed * this._snakeSpeedMult)
   }
 
-  public render(progress: number): void {
+  public render(): void {
 
     // items
     for (const item of this._world.items) {
@@ -78,15 +78,15 @@ export class Game extends Layer<GameOverReason> {
         this.renderCoin(item)
       }
       else if (item instanceof Food) {
-        this.renderFood(item, progress)
+        this.renderFood(item)
       }
       else if (item instanceof Stone) {
-        this.renderStone(item, progress)
+        this.renderStone(item)
       }
     }
 
     // snake
-    this.renderSnake(this._world.snake, progress)
+    this.renderSnake(this._world.snake)
 
     // notifications
     this.renderNotifications(this._notifier)
@@ -111,12 +111,12 @@ export class Game extends Layer<GameOverReason> {
     canvas.closePath()
   }
 
-  private renderFood(food: Food, progress: number): void {
+  private renderFood(food: Food): void {
     const canvas = this._canvas
     const pxSize = this._pxSize
 
     const foodSize = food.justSpawned
-      ? lerp(0, this._halfPxSize, progress)
+      ? lerp(0, this._halfPxSize, this._progress)
       : this._halfPxSize
     const offset = (pxSize - foodSize) / 2
     
@@ -129,10 +129,11 @@ export class Game extends Layer<GameOverReason> {
     )
   }
 
-  private renderStone(stone: Stone, progress: number): void {
+  private renderStone(stone: Stone): void {
     const canvas = this._canvas
     const pxSize = this._pxSize
     const halfPxSize = this._halfPxSize
+    const progress = this._progress
 
     // don't render if stone doesn't exist
     if (!stone.exists && !stone.justDestroyed) {
@@ -163,10 +164,11 @@ export class Game extends Layer<GameOverReason> {
     }
   }
 
-  private renderSnake(snake: Snake, progress: number): void {
+  private renderSnake(snake: Snake): void {
     const canvas = this._canvas
     const pxSize = this._pxSize
     const halfPxSize = this._halfPxSize
+    const progress = this._progress
 
     // cur/pre position of head/tail
     const preTail = snake.preTail

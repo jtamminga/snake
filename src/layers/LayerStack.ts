@@ -1,16 +1,20 @@
-import { Layer, type LayerArgs } from './Layer.js'
-import type { Input } from '../utils/index.js'
+import { Layer } from './Layer.js'
 
 
-export class LayerStack extends Layer {
+export class LayerStack {
 
+  private _canvas: CanvasRenderingContext2D
+  private _width: number
+  private _height: number
   private _layers: Layer[]
   private _lastIndex: number
   private _topOpaqueIndex: number
   private _baseLayerFactory: () => Layer
 
   public constructor(args: LayerStackArgs) {
-    super(args)
+    this._canvas = args.canvas
+    this._width = args.width
+    this._height = args.height
     this._baseLayerFactory = args.baseLayerFactory
     this._layers = [this._baseLayerFactory()]
     this._lastIndex = 0
@@ -29,30 +33,37 @@ export class LayerStack extends Layer {
     }
   }
 
-  public update(input: Input): number {
-    const result = this.top.update(input)
+  public advanceFrame(delta: number): void {
+
+    // clean up layers
     this.cleanup()
-    return result
+
+    // any pre rendering
+    this.preRender()
+
+    // advance top layer
+    this.top.advanceFrame(delta)
   }
 
-  public render(progress: number): void {
+  private preRender(): void {
+
+    // clear canvas
     this._canvas.clearRect(0, 0, this._width, this._height)
-    for (let i = this._topOpaqueIndex; i < this._layers.length; i++) {
+
+    // render any previous layers
+    for (let i = this._topOpaqueIndex; i < this._layers.length - 1; i++) {
       const layer = this._layers[i]!
-      // only top layer renders with actual progress
-      // TODO: all other layers should get their last progress value
-      layer.render(
-        i === this._layers.length - 1
-          ? progress
-          : 0
-      )
+      layer.render()
     }
   }
 
   private cleanup(): void {
     if (this.top.resolved) {
+
+      // remove top layer
       this._layers = this._layers.filter(layer => !layer.resolved)
 
+      // recalculate indexs
       this._lastIndex = this._layers.length - 1
       for (let i = this._lastIndex; i >= 0; i--) {
         if (this._layers[i]!.opaque) {
@@ -61,6 +72,7 @@ export class LayerStack extends Layer {
         }
       }
 
+      // add base layer if no layers left
       if (this._layers.length === 0) {
         this.add(this._baseLayerFactory())
       }
@@ -70,6 +82,9 @@ export class LayerStack extends Layer {
 }
 
 
-type LayerStackArgs = LayerArgs & {
+type LayerStackArgs = {
+  width: number;
+  height: number;
+  canvas: CanvasRenderingContext2D;
   baseLayerFactory: () => Layer
 }
