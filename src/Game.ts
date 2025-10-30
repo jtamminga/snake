@@ -72,6 +72,8 @@ export class Game extends Layer<GameOverReason> {
 
   public render(): void {
 
+    this.renderGrid()
+
     // items
     for (const item of this._world.items) {
       if (item instanceof Coin) {
@@ -90,6 +92,30 @@ export class Game extends Layer<GameOverReason> {
 
     // notifications
     this.renderNotifications(this._notifier)
+  }
+
+  private renderGrid(): void {
+    const canvas = this._canvas
+    const pxSize = this._pxSize
+    const width = this._width
+    const height = this._height
+    canvas.strokeStyle = 'rgb(45, 45, 45)'
+
+    // verticle lines
+    for (let i = 1; i < width - 1; i++) {
+      canvas.beginPath()
+      canvas.moveTo(i * pxSize, 0)
+      canvas.lineTo(i * pxSize, height)
+      canvas.stroke()
+    }
+
+    // horizontal lines
+    for (let i = 1; i < height - 1; i++) {
+      canvas.beginPath()
+      canvas.moveTo(0, i * pxSize)
+      canvas.lineTo(width, i * pxSize)
+      canvas.stroke();
+    }
   }
 
   private renderCoin(coin: Coin): void {

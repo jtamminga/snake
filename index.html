@@ -9,9 +9,13 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Tiny5&display=swap" rel="stylesheet">
   <style>
+    * {
+      box-sizing: border-box;
+    }
+
     body {
       margin: 0;
-      padding: 0;
+      padding: 10px;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -21,6 +25,7 @@
     }
 
     canvas {
+      max-width: 100%;
       border: 2px solid #fff;
       background-color: #1a1a1a;
       display: block;

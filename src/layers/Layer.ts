@@ -56,6 +56,10 @@ export abstract class Layer<TResolve = any> {
 
       // time tracking
       this._lastUpdate = this._lastUpdate % this._updateInterval
+
+      // set progress to zero
+      // for example if a game over layer gets triggered from update we want progress to be zero
+      this._progress = 0
     }
   }
 
